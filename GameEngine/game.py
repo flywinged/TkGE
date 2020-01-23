@@ -10,7 +10,7 @@ from .base.gameObject import GameObject
 from .base.fonts import initializeFonts
 from .base.fonts import courier
 
-from .objects.circle import Circle
+from .objects.oval import Oval
 from .objects.button import Button
 
 from .gameState import GameState
@@ -46,7 +46,7 @@ class Game:
         # self.canvas.pack(expand = True, fill = "both")
 
         # Initialize all the event callbacks
-        self.root.bind_all("<Motion>", self.eventCallback)
+        self.root.bind_all("<Motion>", self.motionCallback)
         self.root.bind_all("<Key>", self.eventCallback)
 
         # Initialize everything which gameObject will use
@@ -61,10 +61,10 @@ class Game:
 
         for x in range(cols):
             for y in range(rows):
-                button = Circle(
+                button = Oval(
                     self.canvas,
-                    (x * width, y * height),
-                    15.4
+                    (x / cols, y / rows),
+                    (30 / self.width, 30 / self.height)
                 )
 
                 GameState.addGameObject(button)
@@ -72,10 +72,20 @@ class Game:
         GameState.addGameObject(
             Button(
                 self.canvas,
-                (300, 300),
-                "Test"
+                (.6, .51),
+                "test"
             )
         )
+
+    def motionCallback(self, event: Event):
+        '''
+        Noprmalize mouse motion
+        '''
+
+        event.x = event.x / int(self.canvas.cget("width"))
+        event.y = event.y / int(self.canvas.cget("height"))
+
+        self.eventThread.eventQueue.append(event)
 
     def eventCallback(self, event: Event):
         '''
@@ -137,10 +147,6 @@ def setAspectRatio(game: Game, aspectRatio: float):
             desiredHeight = event.height
             desiredWidth = int(event.height * aspectRatio)
 
-        # Determine the change in size of the content frame
-        widthScale = desiredWidth / int(game.canvas.cget("width"))
-        heightScale = desiredHeight / int(game.canvas.cget("height"))
-
         # place the window, giving it an explicit size
         game.canvas.place(in_=game.padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
             width=desiredWidth, height=desiredHeight)
@@ -150,6 +156,6 @@ def setAspectRatio(game: Game, aspectRatio: float):
 
         # Call the resize function on each child gameObject
         for gameObject in GameState.all():
-            gameObject.resize(widthScale, heightScale)
+            gameObject.resize(desiredWidth, desiredHeight)
 
     game.padFrame.bind("<Configure>", enforceAspectRatio)

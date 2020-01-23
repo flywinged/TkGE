@@ -1,12 +1,12 @@
 from tkinter import Canvas, CENTER, Event, EventType
 
-from ..base.collider import CircleCollider
+from ..base.collider import OvalCollider
 from ..base.gameObject import GameObject
 from ..base import fonts
 
 from typing import Tuple
 
-class Circle(GameObject):
+class Oval(GameObject):
     '''
 
     '''
@@ -15,16 +15,21 @@ class Circle(GameObject):
             self,
             canvas: Canvas,
             position: Tuple[int],
-            radius: float,
+            radius: Tuple[float, float],
             **kwargs
             ):
 
-        collider = CircleCollider(position[0], position[1], radius)
+        collider = OvalCollider(position[0], position[1], radius)
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
 
         self.hovered: bool = False
 
-        self.ID: int = self.canvas.create_oval(collider.x - collider.r, collider.y - collider.r, collider.x + collider.r, collider.y + collider.r, fill = "grey")
+        self.ID: int = self.canvas.create_oval(
+            (collider.x - collider.r[0]) * self.initialScreenWidth,
+            (collider.y - collider.r[1]) * self.initialScreenHeight,
+            (collider.x + collider.r[0]) * self.initialScreenWidth,
+            (collider.y + collider.r[1]) * self.initialScreenHeight,
+            fill = "grey")
 
     def move(self):
         
@@ -37,12 +42,12 @@ class Circle(GameObject):
         if event.type == EventType.Motion:
             self.checkHover((event.x, event.y))
     
-    def _resize(self, widthScale: float, heightScale: float):
+    def _resize(self, newWidth: int, newHeight: int):
         '''
         Resize the circle
         '''
 
-        self.canvas.scale(self.ID, 0, 0, widthScale, heightScale)
+        self.canvas.scale(self.ID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
 
     def checkHover(self, point: Tuple[int]):
         '''

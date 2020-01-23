@@ -29,6 +29,13 @@ class GameObject:
         # All the rest of the arguments are optional
         self.collider: Collider = collider
 
+        # To remember the size of the screen
+        self.initialScreenWidth: int = int(self.canvas.cget("width"))
+        self.initialScreenHeight: int = int(self.canvas.cget("width"))
+
+        self.lastScreenWidth: int = int(self.canvas.cget("width"))
+        self.lastScreenHeight: int = int(self.canvas.cget("width"))
+
         # GameObject ID
         self.ID: int = self.currentID
         GameObject.currentID += 1
@@ -41,18 +48,22 @@ class GameObject:
         Virtual function to overwrite
         '''
 
-    def _resize(self, widthScale: float, heightScale: float):
+    def _resize(self, newWidth: int, newHeight: int):
         '''
-        Cirtual functino to overwrite
+        Cirtual function to overwrite
         '''
 
-    def resize(self, widthScale: float, heightScale: float):
+    def resize(self, newWidth: int, newHeight: int):
         '''
         Resize the object and it's collider
         '''
 
-        self.collider.resize(widthScale, heightScale)
-        self._resize(widthScale, heightScale)
+        self.collider.resize(newWidth, newHeight)
+        self._resize(newWidth, newHeight)
+
+        # Update the old width variables
+        self.lastScreenWidth = newWidth
+        self.lastScreenHeight = newHeight
 
     def handleEvent(self, event: Event):
         '''

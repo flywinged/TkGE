@@ -20,19 +20,30 @@ class Button(GameObject):
             **kwargs
             ):
 
-        # A Button uses the basic box collider. Build the appropriate box collider.
-        w = fonts.courier[12].measure(text)
-        h = fonts.courier[12].metrics()["linespace"]
-        collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
+        GameObject.__init__(self, canvas, **kwargs)
 
-        GameObject.__init__(self, canvas, collider = collider, **kwargs)
+         # A Button uses the basic box collider. Build the appropriate box collider.
+        w = ((fonts.courier[12].measure(text) + 8) / self.initialScreenWidth) * 1.05
+        h = ((fonts.courier[12].metrics()["linespace"] + 8) / self.initialScreenHeight) * 1.05
+        self.collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
 
         self.text: str = text
 
         self.hovered: bool = False
 
-        self.rectID: int = self.canvas.create_rectangle(collider.x, collider.y, collider.x + w, collider.y + h, fill = "grey")
-        self.textID: int = self.canvas.create_text(position, text = self.text, fill = "black", anchor = anchor, font = fonts.courier)
+        self.rectID: int = self.canvas.create_rectangle(
+            (self.collider.x) * self.initialScreenWidth,
+            (self.collider.y) * self.initialScreenHeight,
+            (self.collider.x + w) * self.initialScreenWidth,
+            (self.collider.y + h) * self.initialScreenHeight,
+            fill = "grey")
+
+        self.textID: int = self.canvas.create_text(
+            (position[0] * self.initialScreenWidth, position[1] * self.initialScreenHeight),
+            text = self.text,
+            fill = "black",
+            anchor = anchor,
+            font = fonts.courier[12])
 
     def move(self):
         
@@ -46,13 +57,16 @@ class Button(GameObject):
         if event.type == EventType.Motion:
             self.checkHover((event.x, event.y))
     
-    def _resize(self, widthScale: float, heightScale: float):
+    def _resize(self, newWidth: int, newHeight: int):
         '''
         Resize the button
         '''
 
-        self.canvas.scale(self.rectID, 0, 0, widthScale, heightScale)
-        self.canvas.scale(self.textID, 0, 0, widthScale, heightScale)
+        self.canvas.scale(self.rectID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
+        self.canvas.scale(self.textID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
+
+        # May need to create different sized text as the size is adjusted. Do this here.
+
 
     def checkHover(self, point: Tuple[int]):
         '''
