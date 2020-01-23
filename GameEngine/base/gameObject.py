@@ -41,6 +41,19 @@ class GameObject:
         Virtual function to overwrite
         '''
 
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Cirtual functino to overwrite
+        '''
+
+    def resize(self, widthScale: float, heightScale: float):
+        '''
+        Resize the object and it's collider
+        '''
+
+        self.collider.resize(widthScale, heightScale)
+        self._resize(widthScale, heightScale)
+
     def handleEvent(self, event: Event):
         '''
         Basic event handler filter

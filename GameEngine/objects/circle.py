@@ -36,6 +36,13 @@ class Circle(GameObject):
     def _handleEvent(self, event: Event):
         if event.type == EventType.Motion:
             self.checkHover((event.x, event.y))
+    
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Resize the circle
+        '''
+
+        self.canvas.scale(self.ID, 0, 0, widthScale, heightScale)
 
     def checkHover(self, point: Tuple[int]):
         '''

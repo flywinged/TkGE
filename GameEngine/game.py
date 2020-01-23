@@ -11,51 +11,9 @@ from .base.fonts import initializeFonts
 from .base.fonts import courier
 
 from .objects.circle import Circle
+from .objects.button import Button
 
 from .gameState import GameState
-
-def setAspectRatio(contentFrame: Canvas, padFrame: Frame, aspectRatio: float):
-    '''
-    Function which forces the content frame to maintain a specified aspect ratio.
-    It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
-
-    Parameters
-    ----------
-    @param contentFrame - The canvas object where everything is placed
-
-    @param padFrame - Frame containing the content frame
-
-    @param aspectRatio - Desired fixed aspect ratio
-    '''
-    
-    def enforceAspectRatio(event: Event):
-        '''
-        Enforce function to be bound to tkinter.bind
-        '''
-
-        # start by using the width as the controlling dimension
-        desiredWidth = event.width
-        desiredHeight = int(event.width / aspectRatio)
-
-        # if the window is too tall to fit, use the height as
-        # the controlling dimension
-        if desiredHeight > event.height:
-            desiredHeight = event.height
-            desiredWidth = int(event.height * aspectRatio)
-
-        # Determine the change in size of the content frame
-        widthScale = desiredWidth / int(contentFrame.cget("width"))
-        heightScale = desiredHeight / int(contentFrame.cget("height"))
-
-        # place the window, giving it an explicit size
-        contentFrame.place(in_=padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
-            width=desiredWidth, height=desiredHeight)
-        
-        # Resize everything in the contentFrame
-        contentFrame.configure(width = desiredWidth, height = desiredHeight)
-        contentFrame.scale("all", 0, 0, widthScale, heightScale)
-
-    padFrame.bind("<Configure>", enforceAspectRatio)
 
 class Game:
     '''
@@ -80,7 +38,7 @@ class Game:
 
         # Force the aspect ratio
         if self.forceAspectRatio:
-            setAspectRatio(self.canvas, self.padFrame, self.aspectRatio)
+            setAspectRatio(self, self.aspectRatio)
             self.root.rowconfigure(0, weight = 1)
             self.root.columnconfigure(0, weight = 1)
 
@@ -111,7 +69,13 @@ class Game:
 
                 GameState.addGameObject(button)
         
-        self.canvas.create_text(60, 60, fill = "white", text = "TEST", font = courier[20])
+        GameState.addGameObject(
+            Button(
+                self.canvas,
+                (300, 300),
+                "Test"
+            )
+        )
 
     def eventCallback(self, event: Event):
         '''
@@ -144,3 +108,48 @@ class Game:
         self.root.mainloop()
 
         self.eventThread.isActive = False
+
+
+def setAspectRatio(game: Game, aspectRatio: float):
+    '''
+    Function which forces the content frame to maintain a specified aspect ratio.
+    It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
+
+    Parameters
+    ----------
+    @param game: Game to create padded window for
+
+    @param aspectRatio - Desired fixed aspect ratio
+    '''
+    
+    def enforceAspectRatio(event: Event):
+        '''
+        Enforce function to be bound to tkinter.bind
+        '''
+
+        # start by using the width as the controlling dimension
+        desiredWidth = event.width
+        desiredHeight = int(event.width / aspectRatio)
+
+        # if the window is too tall to fit, use the height as
+        # the controlling dimension
+        if desiredHeight > event.height:
+            desiredHeight = event.height
+            desiredWidth = int(event.height * aspectRatio)
+
+        # Determine the change in size of the content frame
+        widthScale = desiredWidth / int(game.canvas.cget("width"))
+        heightScale = desiredHeight / int(game.canvas.cget("height"))
+
+        # place the window, giving it an explicit size
+        game.canvas.place(in_=game.padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
+            width=desiredWidth, height=desiredHeight)
+        
+        # Resize everything in the game.canvas
+        game.canvas.configure(width = desiredWidth, height = desiredHeight)
+
+        # Call the resize function on each child gameObject
+        for gameObject in GameState.all():
+            gameObject.resize(widthScale, heightScale)
+
+    game.padFrame.bind("<Configure>", enforceAspectRatio)

@@ -21,8 +21,8 @@ class Button(GameObject):
             ):
 
         # A Button uses the basic box collider. Build the appropriate box collider.
-        w = fonts.courier.measure(text)
-        h = fonts.courier.metrics()["linespace"]
+        w = fonts.courier[12].measure(text)
+        h = fonts.courier[12].metrics()["linespace"]
         collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
 
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
@@ -45,6 +45,14 @@ class Button(GameObject):
     def _handleEvent(self, event: Event):
         if event.type == EventType.Motion:
             self.checkHover((event.x, event.y))
+    
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Resize the button
+        '''
+
+        self.canvas.scale(self.rectID, 0, 0, widthScale, heightScale)
+        self.canvas.scale(self.textID, 0, 0, widthScale, heightScale)
 
     def checkHover(self, point: Tuple[int]):
         '''

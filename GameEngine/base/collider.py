@@ -21,13 +21,25 @@ class Collider:
         '''
 
         return self._isPointInside(point)
+    
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Virtual function to overwrite
+        '''
+    
+    def resize(self, widthScale: float, heightScale: float):
+        '''
+        Virtual function to overwrite
+        '''
+
+        self._resize(widthScale, heightScale)
 
 class BoxCollider(Collider):
     '''
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: int, y: int, w: int, h: int, anchor: str = CENTER):
+    def __init__(self, x: float, y: float, w: float, h: float, anchor: str = CENTER):
         Collider.__init__(self)
 
         # The logic for the box changes slightly depending on the supplied anchor.
@@ -43,10 +55,10 @@ class BoxCollider(Collider):
         elif anchor == SW or anchor == S or anchor == SE:
             y -= h
 
-        self.x: int = x
-        self.y: int = y
-        self.w: int = w
-        self.h: int = h
+        self.x: float = x
+        self.y: float = y
+        self.w: float = w
+        self.h: float = h
     
     def _isPointInside(self, point: Tuple[int]) -> bool:
         '''
@@ -54,17 +66,27 @@ class BoxCollider(Collider):
         '''
 
         return (point[0] >= self.x and point[0] <= self.x + self.w and point[1] >= self.y and point[1] <= self.y + self.h)
+    
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Resize the collider
+        '''
+
+        self.x *= widthScale
+        self.w *= widthScale
+        self.y *= heightScale
+        self.h *= heightScale
 
 class CircleCollider(Collider):
     '''
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: int, y: int, r: float):
+    def __init__(self, x: float, y: float, r: float):
         Collider.__init__(self)
 
-        self.x: int = x
-        self.y: int = y
+        self.x: float = x
+        self.y: float = y
         self.r: float = r
     
     def _isPointInside(self, point: Tuple[int]) -> bool:
@@ -74,3 +96,12 @@ class CircleCollider(Collider):
 
         pointDistance = ((point[0] - self.x)**2 + (point[1] - self.y)**2) ** (1/2)
         return (pointDistance <= self.r)
+    
+    def _resize(self, widthScale: float, heightScale: float):
+        '''
+        Resize the circle collider
+        '''
+
+        self.x *= widthScale
+        self.y *= heightScale
+        self.r *= widthScale
