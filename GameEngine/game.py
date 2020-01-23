@@ -111,7 +111,7 @@ class Game:
 
                 GameState.addGameObject(button)
         
-        self.canvas.create_text(60, 60, fill = "white", text = "TEST", font = "Courier 20")
+        self.canvas.create_text(60, 60, fill = "white", text = "TEST", font = courier[20])
 
     def eventCallback(self, event: Event):
         '''
