@@ -1,59 +1,91 @@
-from tkinter import Tk, Canvas, Event
+from tkinter import Tk, Canvas, Event, Frame
 from tkinter.constants import *
 
-from typing import List
+from typing import List, Tuple
 
 from .eventThread import EventThread
 
 from .base.gameObject import GameObject
 
 from .base.fonts import initializeFonts
+from .base.fonts import courier
 
 from .objects.circle import Circle
 
 from .gameState import GameState
 
-# a subclass of Canvas for dealing with resizing of windows
-class ResizingCanvas(Canvas):
-    def __init__(self,parent,**kwargs):
-        Canvas.__init__(self,parent,**kwargs)
-        self.bind("<Configure>", self.on_resize)
-        self.height = self.winfo_reqheight()
-        self.width = self.winfo_reqwidth()
+def setAspectRatio(contentFrame: Canvas, padFrame: Frame, aspectRatio: float):
+    '''
+    Function which forces the content frame to maintain a specified aspect ratio.
+    It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
 
-    def on_resize(self,event):
-        # determine the ratio of old width/height to new width/height
-        wscale = float(event.width)/self.width
-        hscale = float(event.height)/self.height
-        self.width = event.width
-        self.height = event.height
-        # resize the canvas 
-        self.config(width=self.width, height=self.height)
-        # rescale all the objects tagged with the "all" tag
-        self.scale("all",0,0,wscale,hscale)
+    Parameters
+    ----------
+    @param contentFrame - The canvas object where everything is placed
+
+    @param padFrame - Frame containing the content frame
+
+    @param aspectRatio - Desired fixed aspect ratio
+    '''
+    
+    def enforceAspectRatio(event: Event):
+        '''
+        Enforce function to be bound to tkinter.bind
+        '''
+
+        # start by using the width as the controlling dimension
+        desiredWidth = event.width
+        desiredHeight = int(event.width / aspectRatio)
+
+        # if the window is too tall to fit, use the height as
+        # the controlling dimension
+        if desiredHeight > event.height:
+            desiredHeight = event.height
+            desiredWidth = int(event.height * aspectRatio)
+
+        # Determine the change in size of the content frame
+        widthScale = desiredWidth / int(contentFrame.cget("width"))
+        heightScale = desiredHeight / int(contentFrame.cget("height"))
+
+        # place the window, giving it an explicit size
+        contentFrame.place(in_=padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
+            width=desiredWidth, height=desiredHeight)
+        
+        # Resize everything in the contentFrame
+        contentFrame.configure(width = desiredWidth, height = desiredHeight)
+        contentFrame.scale("all", 0, 0, widthScale, heightScale)
+
+    padFrame.bind("<Configure>", enforceAspectRatio)
 
 class Game:
     '''
     A Game object contains all the logic necessary for the game loop.
     '''
 
-    def __init__(self, width = 1280, height = 720, frameDelay: int = 17):
+    def __init__(self, width = 1280, height = 720, frameDelay: int = 17, forceAspectRatio: bool = True):
 
         self.width: int = width
         self.height: int = height
+        self.aspectRatio: float = self.width / self.height
+        self.forceAspectRatio: bool = forceAspectRatio
         self.frameDelay: int = frameDelay
 
         self.eventThread: EventThread = EventThread()
 
         # Create the tk root and initialize the canvas
         self.root = Tk()
-        self.canvas: Canvas = ResizingCanvas(self.root, width = self.width, height = self.height, highlightthickness = 0)
+        self.padFrame = Frame(borderwidth = 0, background = "green", width = self.width, height = self.height)
+        self.padFrame.grid(row = 0, column = 0, sticky="nsew")
+        self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
 
-        # Set the background of canvas to black, just so it looks sleeker
-        self.canvas.configure(background = '#000')
+        # Force the aspect ratio
+        if self.forceAspectRatio:
+            setAspectRatio(self.canvas, self.padFrame, self.aspectRatio)
+            self.root.rowconfigure(0, weight = 1)
+            self.root.columnconfigure(0, weight = 1)
 
         # Pack the canvas so it can be used
-        self.canvas.pack(expand = True, fill = "both")
+        # self.canvas.pack(expand = True, fill = "both")
 
         # Initialize all the event callbacks
         self.root.bind_all("<Motion>", self.eventCallback)
@@ -78,6 +110,8 @@ class Game:
                 )
 
                 GameState.addGameObject(button)
+        
+        self.canvas.create_text(60, 60, fill = "white", text = "TEST", font = "Courier 20")
 
     def eventCallback(self, event: Event):
         '''
@@ -85,6 +119,21 @@ class Game:
         '''
 
         self.eventThread.eventQueue.append(event)
+
+    def enforceAspectRatio(self, event: Event):
+        '''
+        If the forceAspectRatio flag is set, make sure any configure calls don't change the aspect ratio
+        '''
+
+        # don't do anything if the flag isn't set
+        if not self.forceAspectRatio:
+            return
+
+        # Keep the height fixed, but adjust the width accordingly
+        self.height = event.height
+        self.width = int(round(event.height * self.aspectRatio))
+
+        self.canvas.place(in_=self.padFrame, x=0, y=0, width = self.width, height = self.height)
 
 
     def start(self):
