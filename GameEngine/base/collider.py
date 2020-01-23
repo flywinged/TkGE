@@ -94,8 +94,8 @@ class OvalCollider(Collider):
         If the point is within (or on) the box described by self.x, y, w, and h, return true
         '''
 
-        normalizedDistance = (((point[0] - self.x)/self.r[0])**2 + ((point[1] - self.y) / self.r[1])**2)
-        return (normalizedDistance <= 1)
+        normalizedDistance = (((point[0] - self.x) * self.r[1])**2 + ((point[1] - self.y) * self.r[0])**2)
+        return (normalizedDistance <= self.r[0]**2 * self.r[1]**2)
     
     # def _resize(self, newWidth: int, newHeight: int):
     #     '''
