@@ -14,7 +14,15 @@ from ..base.gameObject import GameObject
 
 class Oval(GameObject):
     '''
+    Oval object class definition.
 
+    Parameters
+    ----------
+    @param canvas - tkinter canvas object. This should be the main game canvas.
+
+    @param position - (x(float), y(float)) normalized position of the oval on the screen. (.5, .5) puts the oval in the center of the screen
+
+    @param radius - (x(float), y(float)) normalized radii of the oval along the x and y axis.
     '''
 
     def __init__(
@@ -25,9 +33,11 @@ class Oval(GameObject):
             **kwargs
             ):
 
+        # Create the oval collider for the object. This collider is then passed in to the parent initializer
         collider = OvalCollider(position[0], position[1], radius)
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
 
+        # 
         self.hovered: bool = False
 
         self.ID: int = self.canvas.create_oval(

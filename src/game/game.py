@@ -63,7 +63,7 @@ class Game:
         self.root.bind_all("<Motion>", self.motionCallback)
         self.root.bind_all("<Key>", self.eventCallback)
 
-        # Initialize everything which gameObject could ever use
+        # Initialize everything which gameObject could ever use. For now, that is just the fonts
         initializeFonts()
 
         # Initialize the gameObjects dict

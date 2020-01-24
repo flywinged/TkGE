@@ -7,6 +7,3 @@ from .game import *
 
 # Object imports
 from .objects import *
-
-# State imports
-from .state import *
