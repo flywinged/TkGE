@@ -1,7 +1,11 @@
+
+# Tkinter imports
 from tkinter import Canvas, Event
 
+# Python imports
 from typing import Tuple
 
+# Package imports
 from .collider import Collider
 
 class GameObject:

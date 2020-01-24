@@ -1,10 +1,15 @@
+
+# Tkinter imports
 from tkinter import Canvas
 from tkinter import CENTER
+
+# Python imports
+from typing import Tuple
+
+# Library imports
 from ..base import BoxCollider
 from ..base import GameObject
 from ..base import fonts
-
-from typing import Tuple
 
 class Text(GameObject):
     '''

@@ -1,5 +1,8 @@
+
+# Tkinter imports
 from tkinter.constants import *
 
+# Python imports
 from typing import Tuple
 
 class Collider:
@@ -66,16 +69,7 @@ class BoxCollider(Collider):
         '''
 
         return (point[0] >= self.x and point[0] <= self.x + self.w and point[1] >= self.y and point[1] <= self.y + self.h)
-    
-    # def _resize(self, newWidth: int, newHeight: int):
-    #     '''
-    #     Resize the collider
-    #     '''
 
-    #     self.x *= newWidth
-    #     self.w *= newWidth
-    #     self.y *= newHeight
-    #     self.h *= newHeight
 
 class OvalCollider(Collider):
     '''
@@ -97,11 +91,3 @@ class OvalCollider(Collider):
         normalizedDistance = (((point[0] - self.x) * self.r[1])**2 + ((point[1] - self.y) * self.r[0])**2)
         return (normalizedDistance <= self.r[0]**2 * self.r[1]**2)
     
-    # def _resize(self, newWidth: int, newHeight: int):
-    #     '''
-    #     Resize the circle collider
-    #     '''
-
-    #     self.x *= newWidth
-    #     self.y *= newHeight
-    #     self.r *= newWidth

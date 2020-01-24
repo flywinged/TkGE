@@ -1,10 +1,15 @@
-from tkinter import Canvas, CENTER, Event, EventType
 
+# Tkinter imports
+from tkinter import Canvas
+from tkinter import Event
+from tkinter import EventType
+
+# Python imports
+from typing import Tuple
+
+# Package imports
 from ..base.collider import OvalCollider
 from ..base.gameObject import GameObject
-from ..base import fonts
-
-from typing import Tuple
 
 
 class Oval(GameObject):
