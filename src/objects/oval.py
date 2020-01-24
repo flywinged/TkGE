@@ -6,6 +6,7 @@ from ..base import fonts
 
 from typing import Tuple
 
+
 class Oval(GameObject):
     '''
 
