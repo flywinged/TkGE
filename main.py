@@ -1,4 +1,4 @@
-from GameEngine.game import Game
+from src import Game
 
 g = Game()
 

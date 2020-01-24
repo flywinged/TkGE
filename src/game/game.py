@@ -15,11 +15,11 @@ from typing import List
 import time
 
 # Package imports
-from .base.gameObject import GameObject
-from .base.fonts import initializeFonts
+from ..base import GameObject
+from ..base import initializeFonts
 
-from .objects.oval import Oval
-from .objects.button import Button
+from ..objects import Oval
+from ..objects import Button
 
 
 ###################

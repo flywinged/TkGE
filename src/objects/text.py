@@ -1,7 +1,7 @@
 from tkinter import Canvas
 from tkinter import CENTER
-from ..base.collider import BoxCollider
-from ..base.gameObject import GameObject
+from ..base import BoxCollider
+from ..base import GameObject
 from ..base import fonts
 
 from typing import Tuple
@@ -22,4 +22,4 @@ class Text(GameObject):
                 **kwargs
             ):
         
-        GameObject.__init__(self)
+        GameObject.__init__(self, canvas)
