@@ -1,56 +1,73 @@
-from tkinter import Tk, Canvas, Event, Frame
+
+# Tkinter imports
+from tkinter import Canvas
+from tkinter import Event
+from tkinter import EventType
+from tkinter import Frame
+from tkinter import Tk
 from tkinter.constants import *
 
-from typing import List, Tuple
+# Python Built-in imports
+from threading import Thread
+from typing import Dict
+from typing import List
 
-from .eventThread import EventThread
+import time
 
+# Package imports
 from .base.gameObject import GameObject
-
 from .base.fonts import initializeFonts
-from .base.fonts import courier
 
 from .objects.oval import Oval
 from .objects.button import Button
 
-from .gameState import GameState
+
+###################
+# BASE GAME CLASS #
+###################
 
 class Game:
     '''
     A Game object contains all the logic necessary for the game loop.
     '''
 
-    def __init__(self, width = 1280, height = 720, frameDelay: int = 17, forceAspectRatio: bool = True):
+    def __init__(self, width = 1280, height = 720, frameDelay: int = 17):
 
+        # Initial width and height, in pixels, of the game
         self.width: int = width
         self.height: int = height
+
+        # Aspect ratio of the game window. If forceAspect Ratio is set, it 
         self.aspectRatio: float = self.width / self.height
-        self.forceAspectRatio: bool = forceAspectRatio
+
+        # How long (ms) between screen updates.
         self.frameDelay: int = frameDelay
 
-        self.eventThread: EventThread = EventThread()
+        # Create the event thread object. Manage all user inputs
+        self.eventThread: EventThread = EventThread(self)
 
-        # Create the tk root and initialize the canvas
+        # Create the tk root and initialize the canvas and padFrame
         self.root = Tk()
-        self.padFrame = Frame(borderwidth = 0, background = "green", width = self.width, height = self.height)
+        self.padFrame = Frame(borderwidth = 0, background = "#111", width = self.width, height = self.height)
         self.padFrame.grid(row = 0, column = 0, sticky="nsew")
         self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
 
-        # Force the aspect ratio
-        if self.forceAspectRatio:
-            setAspectRatio(self, self.aspectRatio)
-            self.root.rowconfigure(0, weight = 1)
-            self.root.columnconfigure(0, weight = 1)
+        # Bind the tkinter configure action in order to force the aspect ratio of the canvas to always be consistent
+        self.setAspectRatio()
 
-        # Pack the canvas so it can be used
-        # self.canvas.pack(expand = True, fill = "both")
+        # TODO: Figure out what all this row and column configure business does.
+        self.root.rowconfigure(0, weight = 1)
+        self.root.columnconfigure(0, weight = 1)
 
         # Initialize all the event callbacks
         self.root.bind_all("<Motion>", self.motionCallback)
         self.root.bind_all("<Key>", self.eventCallback)
 
-        # Initialize everything which gameObject will use
+        # Initialize everything which gameObject could ever use
         initializeFonts()
+
+        # Initialize the gameObjects dict
+        self.gameObjects: Dict[int, GameObject] = {}
 
         cols = 4
         rows = 6
@@ -67,15 +84,59 @@ class Game:
                     (30 / self.width, 30 / self.height)
                 )
 
-                GameState.addGameObject(button)
+                self.addGameObject(button)
         
-        GameState.addGameObject(
+        self.addGameObject(
             Button(
                 self.canvas,
                 (.6, .51),
                 "test"
             )
         )
+
+
+    ############################
+    # INITIALIZATION FUNCTIONS #
+    ############################
+
+    def setAspectRatio(self):
+        '''
+        Function which forces the content frame to maintain a specified aspect ratio.
+        It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
+        '''
+        
+        def enforceAspectRatio(event: Event):
+            '''
+            Enforce function to be bound to tkinter.bind
+            '''
+
+            # start by using the width as the controlling dimension
+            desiredWidth = event.width
+            desiredHeight = int(event.width / self.aspectRatio)
+
+            # if the window is too tall to fit, use the height as
+            # the controlling dimension
+            if desiredHeight > event.height:
+                desiredHeight = event.height
+                desiredWidth = int(event.height * self.aspectRatio)
+
+            # place the window, giving it an explicit size
+            self.canvas.place(in_=self.padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
+                width=desiredWidth, height=desiredHeight)
+            
+            # Resize everything in the self.canvas
+            self.canvas.configure(width = desiredWidth, height = desiredHeight)
+
+            # Call the resize function on each child gameObject
+            for gameObject in self.getAllGameObjects():
+                gameObject.resize(desiredWidth, desiredHeight)
+
+        self.padFrame.bind("<Configure>", enforceAspectRatio)
+
+
+    #############
+    # CALLBACKS #
+    #############
 
     def motionCallback(self, event: Event):
         '''
@@ -94,20 +155,31 @@ class Game:
 
         self.eventThread.eventQueue.append(event)
 
-    def enforceAspectRatio(self, event: Event):
+
+    ########################
+    # GAMEOBJECT FUNCTIONS #
+    ########################
+    def addGameObject(self, gameObject: GameObject):
         '''
-        If the forceAspectRatio flag is set, make sure any configure calls don't change the aspect ratio
+        Just adds a gameobject to the gameObjects dictionary
         '''
 
-        # don't do anything if the flag isn't set
-        if not self.forceAspectRatio:
-            return
+        self.gameObjects[gameObject.ID] = gameObject
+    
+    def removeGameObject(self, gameObject: GameObject):
+        '''
+        Remove a gameObject from the gameObjects dictionary
+        '''
 
-        # Keep the height fixed, but adjust the width accordingly
-        self.height = event.height
-        self.width = int(round(event.height * self.aspectRatio))
+        del self.gameObjects[gameObject.ID]
+    
+    def getAllGameObjects(self) -> GameObject:
+        '''
+        Generator for returning all the gameObjects in the gameObjects dictionary
+        '''
 
-        self.canvas.place(in_=self.padFrame, x=0, y=0, width = self.width, height = self.height)
+        for ID in self.gameObjects:
+            yield self.gameObjects[ID]
 
 
     def start(self):
@@ -120,42 +192,39 @@ class Game:
         self.eventThread.isActive = False
 
 
-def setAspectRatio(game: Game, aspectRatio: float):
-    '''
-    Function which forces the content frame to maintain a specified aspect ratio.
-    It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
+################
+# EVENT THREAD #
+################
 
-    Parameters
-    ----------
-    @param game: Game to create padded window for
-
-    @param aspectRatio - Desired fixed aspect ratio
+class EventThread(Thread):
     '''
+    Thread to handle all of the events which will come through the game.
+    '''
+
+    def __init__(self, game: Game):
+        Thread.__init__(self)
+
+        self.game: Game = game
+
+        self.eventQueue: List[Event] = []
+        self.isActive: bool = True
     
-    def enforceAspectRatio(event: Event):
-        '''
-        Enforce function to be bound to tkinter.bind
-        '''
+    def run(self):
 
-        # start by using the width as the controlling dimension
-        desiredWidth = event.width
-        desiredHeight = int(event.width / aspectRatio)
+        while self.isActive:
 
-        # if the window is too tall to fit, use the height as
-        # the controlling dimension
-        if desiredHeight > event.height:
-            desiredHeight = event.height
-            desiredWidth = int(event.height * aspectRatio)
+            while len(self.eventQueue) > 0:
 
-        # place the window, giving it an explicit size
-        game.canvas.place(in_=game.padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
-            width=desiredWidth, height=desiredHeight)
-        
-        # Resize everything in the game.canvas
-        game.canvas.configure(width = desiredWidth, height = desiredHeight)
+                # Lower the amount of checks for mouse motion
+                motionIndex = 0
+                while motionIndex + 1 < len(self.eventQueue) and self.eventQueue[motionIndex + 1].type == EventType.Motion:
+                    motionIndex += 1
+                if motionIndex > 0:
+                    self.eventQueue = self.eventQueue[motionIndex:]
 
-        # Call the resize function on each child gameObject
-        for gameObject in GameState.all():
-            gameObject.resize(desiredWidth, desiredHeight)
+                # Get the next event in the queue and pass it to all gameObjects
+                event = self.eventQueue.pop(0)
+                for gameObject in self.game.getAllGameObjects():
+                    gameObject.handleEvent(event)
 
-    game.padFrame.bind("<Configure>", enforceAspectRatio)
+            time.sleep(.001)
