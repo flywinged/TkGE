@@ -62,6 +62,7 @@ class Game:
         # Initialize all the event callbacks
         self.root.bind_all("<Motion>", self.motionCallback)
         self.root.bind_all("<Key>", self.eventCallback)
+        self.root.bind_all("<KeyRelease>", self.eventCallback)
 
         # Initialize everything which gameObject could ever use. For now, that is just the fonts
         initializeFonts()
