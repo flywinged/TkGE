@@ -11,5 +11,5 @@ def initializeFonts():
 
     # Initialize all courier fonts    
     global courier
-    for size in range(8, 72 + 1):
+    for size in range(4, 72 + 1):
         courier[size] = Font(family = "Courier", size = size)

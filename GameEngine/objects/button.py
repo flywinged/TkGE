@@ -16,15 +16,19 @@ class Button(GameObject):
             canvas: Canvas,
             position: Tuple[int],
             text: str,
+            fontSize: int,
             anchor: str = CENTER,
             **kwargs
             ):
 
         GameObject.__init__(self, canvas, **kwargs)
 
+        self.initialFontSize: int = fontSize
+        self.currentFontSize: int = fontSize
+
          # A Button uses the basic box collider. Build the appropriate box collider.
-        w = ((fonts.courier[12].measure(text) + 8) / self.initialScreenWidth) * 1.05
-        h = ((fonts.courier[12].metrics()["linespace"] + 8) / self.initialScreenHeight) * 1.05
+        w = ((fonts.courier[self.currentFontSize].measure(text) + 8) / self.initialScreenWidth) * 1.05
+        h = ((fonts.courier[self.currentFontSize].metrics()["linespace"] + 8) / self.initialScreenHeight) * 1.05
         self.collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
 
         self.text: str = text
@@ -66,7 +70,10 @@ class Button(GameObject):
         self.canvas.scale(self.textID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
 
         # May need to create different sized text as the size is adjusted. Do this here.
-
+        textSize = int(self.initialFontSize * newWidth / self.initialScreenWidth)
+        if textSize < 4:
+            textSize = 4
+        self.canvas.itemconfig(self.textID, font = fonts.courier[textSize])
 
     def checkHover(self, point: Tuple[int]):
         '''

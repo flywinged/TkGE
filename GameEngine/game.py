@@ -90,7 +90,8 @@ class Game:
             Button(
                 self.canvas,
                 (.6, .51),
-                "test"
+                "test",
+                24
             )
         )
 
@@ -159,6 +160,7 @@ class Game:
     ########################
     # GAMEOBJECT FUNCTIONS #
     ########################
+
     def addGameObject(self, gameObject: GameObject):
         '''
         Just adds a gameobject to the gameObjects dictionary

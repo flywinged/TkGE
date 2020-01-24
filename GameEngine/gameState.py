@@ -8,7 +8,7 @@ class GameState:
     '''
 
     def __init__(self):
-        pass
+        self.__dict__ = {}
 
     ######################
     # SAVING AND LOADING #
