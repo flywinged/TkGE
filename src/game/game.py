@@ -178,7 +178,7 @@ class Game:
         wheelEvent = TGEEvent()
 
         wheelEvent.type = EVENT_TYPE.MOUSE_WHEEL
-        wheelEvent.wheelOffset = event.__delattr__
+        wheelEvent.wheelOffset = event.delta
 
         self.eventThread.eventQueue.append(wheelEvent)
 
