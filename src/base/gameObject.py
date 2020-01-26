@@ -42,8 +42,12 @@ class GameObject:
         self.lastScreenHeight: int = int(self.canvas.cget("width"))
 
         # GameObject ID
-        self.ID: int = self.currentID
-        GameObject.currentID += 1
+        self.ID: int = GameObject.getNextID()
+
+    @classmethod
+    def getNextID(cls):
+        cls.currentID += 1
+        return cls.currentID
 
     def __hash__(self):
         return self.ID

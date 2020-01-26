@@ -13,19 +13,17 @@ from tkinter.constants import SW
 from tkinter.constants import S
 from tkinter.constants import SE
 
-def adjustTopLeftCorner(position: Tuple[float, float], desiredAnchor: str, givenAnchor: str, width: float, height: float) -> Tuple[float, float]:
+def adjustTopLeftCorner(position: Tuple[float, float], anchor: str, width: float, height: float) -> Tuple[float, float]:
     '''
     Takes a given position with a width and height, and returns a new position
         describing wehere the top left corner of the bounding box has to go in
-        order to have the appropriate desiredAnchor.
+        order to have the appropriate anchor.
 
     Parameters
     ----------
-    @param position - (x, y) position on the screen. This position is what is desired to be at the given desiredAnchor
+    @param position - (x, y) position on the screen. This position is what is desired to be at the given anchor
 
-    @param desiredAnchor - tkinter desiredAnchor value
-
-    @param givenAnchor - tkinter givenAnchor value
+    @param anchor - tkinter anchor value
 
     @param width/height - Width and height of the desired bounding box
     '''
@@ -33,31 +31,17 @@ def adjustTopLeftCorner(position: Tuple[float, float], desiredAnchor: str, given
     # Extract the x and y vaules of the position
     x, y = position
 
-    # Modify the x, y values to be the top left corner according to the given anchor values
+    # The logic for the box changes slightly depending on the supplied anchor.
     # Handle the x values first
-    if givenAnchor in [E, NE, SE]:
-        x -= width / 2
-    elif givenAnchor in [W, NW, SW]:
-        x += width / 2
-
-    # Then handle the Y values
-    if givenAnchor in [NW, N , NE]:
-        y += height / 2
-    elif givenAnchor in [SW, S, SE]:
-        y -= height / 2
-
-
-    # The logic for the box changes slightly depending on the supplied desiredAnchor.
-    # Handle the x values first
-    if desiredAnchor in [E, NE, SE]:
+    if anchor in [E, NE, SE]:
         x -= width
-    elif desiredAnchor in [N, CENTER, S]:
+    elif anchor in [N, CENTER, S]:
         x -= width / 2
     
     # Then handle the Y values
-    if desiredAnchor in [W, CENTER, E]:
+    if anchor in [W, CENTER, E]:
         y -= height /2
-    elif desiredAnchor in [SW, S, SE]:
+    elif anchor in [SW, S, SE]:
         y -= height
 
     return x, y

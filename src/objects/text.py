@@ -24,8 +24,7 @@ class Text(GameObject):
                 text: str,
                 font: str = "Courier",
                 fontSize: int = 12,
-                desiredAnchor: str = CENTER,
-                givenAnchor: str = CENTER,
+                anchor: str = CENTER,
                 **kwargs
             ):
         
@@ -43,7 +42,7 @@ class Text(GameObject):
         # Set up the collider for the text.
         w = self.font[self.currentFontSize].measure(text) / self.initialScreenWidth
         h = self.font[self.currentFontSize].metrics()["linespace"] / self.initialScreenHeight
-        self.collider = BoxCollider(position[0], position[1], w, h, desiredAnchor = desiredAnchor, givenAnchor = givenAnchor)
+        self.collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
 
         # Create the text on the canvas and retain the handle on the textID
         self.textID: int = self.canvas.create_text(
@@ -51,7 +50,7 @@ class Text(GameObject):
             self.collider.y * self.initialScreenHeight,
             text = self.text,
             fill = "white",
-            anchor = desiredAnchor,
+            anchor = anchor,
             font = self.font[self.currentFontSize]
         )
     

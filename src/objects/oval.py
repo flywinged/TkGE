@@ -33,13 +33,12 @@ class Oval(GameObject):
             canvas: Canvas,
             position: Tuple[int],
             radius: Tuple[float, float],
-            desiredAnchor: str = CENTER,
-            givenAnchor: str = CENTER,
+            anchor: str = CENTER,
             **kwargs
             ):
 
         # Create the oval collider for the object. This collider is then passed in to the parent initializer
-        collider = OvalCollider(position[0], position[1], radius, desiredAnchor=desiredAnchor, givenAnchor=givenAnchor)
+        collider = OvalCollider(position[0], position[1], radius, anchor=anchor)
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
 
         # 

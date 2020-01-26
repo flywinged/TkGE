@@ -45,11 +45,11 @@ class BoxCollider(Collider):
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: float, y: float, w: float, h: float, desiredAnchor: str = CENTER, givenAnchor: str = NW):
+    def __init__(self, x: float, y: float, w: float, h: float, anchor: str = CENTER):
         Collider.__init__(self)
 
         # Adjust the x, y positions using common function
-        x, y = adjustTopLeftCorner((x, y), desiredAnchor, givenAnchor, w, h)
+        x, y = adjustTopLeftCorner((x, y), anchor, w, h)
 
         self.x: float = x
         self.y: float = y
@@ -69,13 +69,13 @@ class OvalCollider(Collider):
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: float, y: float, r: Tuple[float, float], desiredAnchor: str = CENTER, givenAnchor: str = CENTER):
+    def __init__(self, x: float, y: float, r: Tuple[float, float], anchor: str = CENTER):
         Collider.__init__(self)
 
-        x, y = adjustTopLeftCorner((x, y), desiredAnchor, givenAnchor, r[0], r[1])
+        x, y = adjustTopLeftCorner((x, y), anchor,2 * r[0], 2 * r[1])
 
-        self.x: float = x
-        self.y: float = y
+        self.x: float = x + r[0]
+        self.y: float = y + r[1]
         self.r: Tuple[float, float] = r
     
     def _isPointInside(self, point: Tuple[int]) -> bool:

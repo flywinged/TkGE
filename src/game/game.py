@@ -86,29 +86,12 @@ class Game:
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
 
-        cols = 4
-        rows = 6
-        
-
-        width = self.width // cols
-        height = self.height // rows
-
-        for x in range(cols):
-            for y in range(rows):
-                button = Oval(
-                    self.canvas,
-                    (x / cols, y / rows),
-                    (30 / self.width, 30 / self.height)
-                )
-
-                self.addGameObject(button)
-        
         self.addGameObject(
-            Button(
+            Oval(
                 self.canvas,
-                (0, 0),
-                .05,
-                .02
+                (.5, .5),
+                (.1, .1),
+                anchor=NE
             )
         )
 
@@ -117,6 +100,7 @@ class Game:
                 self.canvas,
                 (.5, .5),
                 "HELLO WORLD",
+                anchor=CENTER
             )
         )
 

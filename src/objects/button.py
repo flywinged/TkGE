@@ -25,15 +25,14 @@ class Button(GameObject):
             position: Tuple[int],
             width: int,
             height: int,
-            desiredAnchor: str = CENTER,
-            givenAnchor: str = NW,
+            anchor: str = CENTER,
             **kwargs
             ):
 
         GameObject.__init__(self, canvas, **kwargs)
 
          # A Button uses the basic box collider. Build the appropriate box collider.
-        self.collider = BoxCollider(position[0], position[1], width, height, desiredAnchor=desiredAnchor, givenAnchor=givenAnchor)
+        self.collider = BoxCollider(position[0], position[1], width, height, anchor=anchor)
 
         self.hovered: bool = False
 
