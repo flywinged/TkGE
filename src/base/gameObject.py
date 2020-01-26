@@ -1,12 +1,13 @@
 
 # Tkinter imports
-from tkinter import Canvas, Event
+from tkinter import Canvas
 
 # Python imports
 from typing import Tuple
 
 # Package imports
 from .collider import Collider
+from .event import TGEEvent
 
 class GameObject:
     '''
@@ -47,7 +48,7 @@ class GameObject:
     def __hash__(self):
         return self.ID
     
-    def _handleEvent(self, event: Event):
+    def _handleEvent(self, event: TGEEvent):
         '''
         Virtual function to overwrite
         '''
@@ -69,7 +70,7 @@ class GameObject:
         self.lastScreenWidth = newWidth
         self.lastScreenHeight = newHeight
 
-    def handleEvent(self, event: Event):
+    def handleEvent(self, event: TGEEvent):
         '''
         Basic event handler filter
         '''

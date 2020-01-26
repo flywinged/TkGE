@@ -1,40 +1,72 @@
 
-# Tkinter imports
-from tkinter import Event
-from tkinter import EventType
+# Python imports
+from enum import auto
+from enum import Enum
+
+from dataclasses import dataclass
+from dataclasses import field
+
+from typing import Set
 
 
 # Event types
-NO_EVENT: int = 0
+class EVENT_TYPE(Enum):
+    NO_EVENT: int = auto()
 
-MOUSE_MOTION: int = 1
-MOUSE_CLICK: int = 2
-MOUSE_RELEASE: int = 3
-MOUSE_DRAG: int = 4
-MOUSE_WHEEL: int = 5
+    MOUSE_MOTION: int = auto()
+    MOUSE_CLICK: int = auto()
+    MOUSE_RELEASE: int = auto()
+    MOUSE_DRAG: int = auto()
+    MOUSE_WHEEL: int = auto()
 
-KEY_PRESS: int = 6
-KEY_RELEASE: int = 7
+    KEY_PRESS: int = auto()
+    KEY_RELEASE: int = auto()
 
-class INPUT_STATE:
+# Mouse Buttons enum
+class BUTTONS(Enum):
+
+    LEFT_CLICK: int = auto()
+    MIDDLE_CLICK: int = auto()
+    RIGHT_CLICK: int = auto()
+
+
+@dataclass
+class InputState:
     '''
-    Keeps track of 
+    Keeps track of the current input state of the application.
     '''
 
+    mouseX: float = 0.0
+    mouseY: float = 0.0
 
+    pressedKeys: Set[str] = None
+    pressedButtons: Set[int] = None
 
+# Create the input set
+INPUT_STATE = InputState()
+
+# Assign all the mutable variables
+INPUT_STATE.pressedKeys = set()
+INPUT_STATE.pressedButtons = set()
+
+@dataclass
 class TGEEvent:
     '''
 
     '''
 
-    def __init__(self):
+    # General event type
+    type: int = 0
 
-        # General event type
-        self.eventType: int = 0
+    # Cursor location
+    mouseX: float = None
+    mouseY: float = None
 
-        # Cursor location
-        self.mouseX: float = None
-        self.mouseY: float = None
+    # Mouse wheel offset
+    wheelOffset: float = None
 
-        #
+    # Mouse button
+    button: int = None
+
+    # Key sym value (from tkinter)
+    keysym: str = None

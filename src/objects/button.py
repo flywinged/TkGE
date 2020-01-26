@@ -3,15 +3,16 @@
 from tkinter import Canvas
 from tkinter import CENTER
 from tkinter import NW
-from tkinter import Event
-from tkinter import EventType
 
 # Python imports
 from typing import Tuple
 
 # Package imports
-from ..base.collider import BoxCollider
-from ..base.gameObject import GameObject
+from ..base import BoxCollider
+from ..base import GameObject
+
+from ..base import TGEEvent
+from ..base import EVENT_TYPE
 
 class Button(GameObject):
     '''
@@ -50,9 +51,9 @@ class Button(GameObject):
         self.collider.x += 1
         self.collider.y += 1
 
-    def _handleEvent(self, event: Event):
-        if event.type == EventType.Motion:
-            self.checkHover((event.x, event.y))
+    def _handleEvent(self, event: TGEEvent):
+        if event.type == EVENT_TYPE.MOUSE_MOTION:
+            self.checkHover((event.mouseX, event.mouseY))
     
     def _resize(self, newWidth: int, newHeight: int):
         '''

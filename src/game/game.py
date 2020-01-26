@@ -18,6 +18,11 @@ import time
 from ..base import GameObject
 from ..base import initializeFonts
 
+from ..base import TGEEvent
+from ..base import EVENT_TYPE
+from ..base import INPUT_STATE
+from ..base import BUTTONS
+
 from ..objects import Oval
 from ..objects import Button
 from ..objects import Text
@@ -60,10 +65,20 @@ class Game:
         self.root.rowconfigure(0, weight = 1)
         self.root.columnconfigure(0, weight = 1)
 
-        # Initialize all the event callbacks
+
+        ##########
+        # EVENTS #
+        ##########
         self.root.bind_all("<Motion>", self.motionCallback)
-        self.root.bind_all("<Key>", self.eventCallback)
-        self.root.bind_all("<KeyRelease>", self.eventCallback)
+
+        self.root.bind_all("<MouseWheel>", self.mouseWheelCallback)
+
+        self.root.bind_all("<ButtonPress>", self.mouseClickCallback)
+        self.root.bind_all("<ButtonRelease>", self.mouseReleaseCallback)
+
+        self.root.bind_all("<KeyPress>", self.keyPressCallback)
+        self.root.bind_all("<KeyRelease>", self.keyReleaseEvent)
+
 
         # Initialize everything which gameObject could ever use. For now, that is just the fonts
         initializeFonts()
@@ -78,15 +93,15 @@ class Game:
         width = self.width // cols
         height = self.height // rows
 
-        # for x in range(cols):
-        #     for y in range(rows):
-        #         button = Oval(
-        #             self.canvas,
-        #             (x / cols, y / rows),
-        #             (30 / self.width, 30 / self.height)
-        #         )
+        for x in range(cols):
+            for y in range(rows):
+                button = Oval(
+                    self.canvas,
+                    (x / cols, y / rows),
+                    (30 / self.width, 30 / self.height)
+                )
 
-        #         self.addGameObject(button)
+                self.addGameObject(button)
         
         self.addGameObject(
             Button(
@@ -151,21 +166,113 @@ class Game:
 
     def motionCallback(self, event: Event):
         '''
-        Noprmalize mouse motion
+        Normalize mouse motion and create a TGE Event for the motion.
         '''
 
-        event.x = event.x / int(self.canvas.cget("width"))
-        event.y = event.y / int(self.canvas.cget("height"))
+        # Create the event and assign all relevant variables
+        motionEvent = TGEEvent()
 
-        self.eventThread.eventQueue.append(event)
+        # If there are no buttons currently held down in the state, just create a normal mouse motion event
+        if len(INPUT_STATE.pressedButtons) == 0:
+            motionEvent.type = EVENT_TYPE.MOUSE_MOTION
+        
+        # Otherwise, create a mouse drag event
+        else:
+            motionEvent.type = EVENT_TYPE.MOUSE_DRAG
+        
+        motionEvent.mouseX = event.x / int(self.canvas.cget("width"))
+        motionEvent.mouseY = event.y / int(self.canvas.cget("height"))
 
-    def eventCallback(self, event: Event):
+        self.eventThread.eventQueue.append(motionEvent)
+
+    def mouseWheelCallback(self, event: Event):
         '''
-        Generic Event callback function. All events should send callbacks here.
+        Create a mouse wheel event
         '''
 
-        self.eventThread.eventQueue.append(event)
+        # Create the event and assign all relevant variables
+        wheelEvent = TGEEvent()
 
+        wheelEvent.type = EVENT_TYPE.MOUSE_WHEEL
+        wheelEvent.wheelOffset = event.__delattr__
+
+        self.eventThread.eventQueue.append(wheelEvent)
+
+    def mouseClickCallback(self, event: Event):
+        '''
+        Create a mouse button press callback
+        '''
+
+        # Create the event and assign all relevant variabels
+        clickEvent = TGEEvent()
+
+        clickEvent.type = EVENT_TYPE.MOUSE_CLICK
+
+        # Determine which button constant was pressed
+        mouseButton = 0
+        if event.num == 1:
+            mouseButton = BUTTONS.LEFT_CLICK
+        elif event.num == 2:
+            mouseButton = BUTTONS.MIDDLE_CLICK
+        elif event.num == 3:
+            mouseButton = BUTTONS.RIGHT_CLICK
+        clickEvent.button = mouseButton
+
+        # Make sure the button is not already pressed
+        if clickEvent.button not in INPUT_STATE.pressedButtons:
+            self.eventThread.eventQueue.append(clickEvent)
+
+    def mouseReleaseCallback(self, event: Event):
+        '''
+        Create a mouse release event
+        '''
+
+        # Create the event and assign all relevant variables
+        mouseReleaseEvent = TGEEvent()
+
+        mouseReleaseEvent.type = EVENT_TYPE.MOUSE_RELEASE
+
+        # Determine which button constant was pressed
+        mouseButton = 0
+        if event.num == 1:
+            mouseButton = BUTTONS.LEFT_CLICK
+        elif event.num == 2:
+            mouseButton = BUTTONS.MIDDLE_CLICK
+        elif event.num == 3:
+            mouseButton = BUTTONS.RIGHT_CLICK
+        mouseReleaseEvent.button = mouseButton
+
+        # Add the event to the queue
+        self.eventThread.eventQueue.append(mouseReleaseEvent)
+
+    def keyPressCallback(self, event: Event):
+        '''
+        Create a keyPress Event
+        '''
+
+        # Create an event and assign all the relevant variables
+        keyPressEvent = TGEEvent()
+
+        keyPressEvent.type = EVENT_TYPE.KEY_PRESS
+        keyPressEvent.keysym = event.keysym.lower()
+
+        # Make sure that the keysym is not already pressed
+        if keyPressEvent.keysym not in INPUT_STATE.pressedKeys:
+            self.eventThread.eventQueue.append(keyPressEvent)
+
+    def keyReleaseEvent(self, event: Event):
+        '''
+        Create a keyRelease event
+        '''
+
+        # Create an event and assign all the relevant variables
+        keyReleaseEvent = TGEEvent()
+
+        keyReleaseEvent.type = EVENT_TYPE.KEY_RELEASE
+        keyReleaseEvent.keysym = event.keysym.lower()
+
+        # Add the event to the thread
+        self.eventThread.eventQueue.append(keyReleaseEvent)
 
     ########################
     # GAMEOBJECT FUNCTIONS #
@@ -218,7 +325,7 @@ class EventThread(Thread):
 
         self.game: Game = game
 
-        self.eventQueue: List[Event] = []
+        self.eventQueue: List[TGEEvent] = []
         self.isActive: bool = True
     
     def run(self):
@@ -229,7 +336,7 @@ class EventThread(Thread):
 
                 # Lower the amount of checks for mouse motion
                 motionIndex = 0
-                while motionIndex + 1 < len(self.eventQueue) and self.eventQueue[motionIndex + 1].type == EventType.Motion:
+                while motionIndex + 1 < len(self.eventQueue) and self.eventQueue[motionIndex + 1].type == EVENT_TYPE.MOUSE_MOTION:
                     motionIndex += 1
                 if motionIndex > 0:
                     self.eventQueue = self.eventQueue[motionIndex:]
@@ -238,5 +345,36 @@ class EventThread(Thread):
                 event = self.eventQueue.pop(0)
                 for gameObject in self.game.getAllGameObjects():
                     gameObject.handleEvent(event)
+                
+
+                ######################
+                # INPUT_STATE UPDATE #
+                ######################
+                
+                # Mouse Motion
+                if event.type == EVENT_TYPE.MOUSE_MOTION or event.type == EVENT_TYPE.MOUSE_DRAG:
+
+                    INPUT_STATE.mouseX = event.mouseX
+                    INPUT_STATE.mouseY = event.mouseY                
+
+                # Mouse Click
+                elif event.type == EVENT_TYPE.MOUSE_CLICK:
+
+                    INPUT_STATE.pressedButtons.add(event.button)
+                
+                # Mouse Release
+                elif event.type == EVENT_TYPE.MOUSE_RELEASE and event.button in INPUT_STATE.pressedButtons:
+
+                    INPUT_STATE.pressedButtons.remove(event.button)
+
+                # Key Press
+                elif event.type == EVENT_TYPE.KEY_PRESS:
+
+                    INPUT_STATE.pressedKeys.add(event.keysym)
+                
+                # Key Release
+                elif event.type == EVENT_TYPE.KEY_RELEASE and event.keysym in INPUT_STATE.pressedKeys:
+
+                    INPUT_STATE.pressedKeys.remove(event.keysym)
 
             time.sleep(.001)
