@@ -12,7 +12,6 @@ from ..base.gameObject import GameObject
 
 from ..base import EVENT_TYPE
 from ..base import TGEEvent
-from ..base import INPUT_STATE
 
 
 class Oval(GameObject):

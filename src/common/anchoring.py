@@ -3,7 +3,6 @@
 from typing import Tuple
 
 # Tkinter imports
-from tkinter.constants import NW
 from tkinter.constants import N
 from tkinter.constants import NE
 from tkinter.constants import W

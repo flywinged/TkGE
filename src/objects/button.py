@@ -2,7 +2,6 @@
 # Tkinter imports
 from tkinter import Canvas
 from tkinter import CENTER
-from tkinter import NW
 
 # Python imports
 from typing import Tuple

@@ -2,7 +2,6 @@
 # Tkinter imports
 from tkinter import Canvas
 from tkinter import Event
-from tkinter import EventType
 from tkinter import Frame
 from tkinter import Tk
 from tkinter.constants import *
@@ -24,7 +23,6 @@ from ..base import INPUT_STATE
 from ..base import BUTTONS
 
 from ..objects import Oval
-from ..objects import Button
 from ..objects import Text
 
 

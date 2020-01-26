@@ -4,7 +4,6 @@ from enum import auto
 from enum import Enum
 
 from dataclasses import dataclass
-from dataclasses import field
 
 from typing import Set
 
