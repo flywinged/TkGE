@@ -3,6 +3,7 @@
 from tkinter import Canvas
 from tkinter import Event
 from tkinter import EventType
+from tkinter import CENTER
 
 # Python imports
 from typing import Tuple
@@ -30,11 +31,13 @@ class Oval(GameObject):
             canvas: Canvas,
             position: Tuple[int],
             radius: Tuple[float, float],
+            desiredAnchor: str = CENTER,
+            givenAnchor: str = CENTER,
             **kwargs
             ):
 
         # Create the oval collider for the object. This collider is then passed in to the parent initializer
-        collider = OvalCollider(position[0], position[1], radius)
+        collider = OvalCollider(position[0], position[1], radius, desiredAnchor=desiredAnchor, givenAnchor=givenAnchor)
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
 
         # 

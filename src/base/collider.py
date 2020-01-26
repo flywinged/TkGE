@@ -5,6 +5,9 @@ from tkinter.constants import *
 # Python imports
 from typing import Tuple
 
+# Package imports
+from ..common import adjustTopLeftCorner
+
 class Collider:
     '''
     A Collider keeps track of when the mouse is inside of it or not.
@@ -42,21 +45,11 @@ class BoxCollider(Collider):
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: float, y: float, w: float, h: float, anchor: str = CENTER):
+    def __init__(self, x: float, y: float, w: float, h: float, desiredAnchor: str = CENTER, givenAnchor: str = NW):
         Collider.__init__(self)
 
-        # The logic for the box changes slightly depending on the supplied anchor.
-        # Handle the x values first
-        if anchor == E or anchor == NE or anchor == SE:
-            x -= w
-        elif anchor == N or anchor == CENTER or anchor == S:
-            x -= w/2
-        
-        # Then handle the Y values
-        if anchor == W or anchor == CENTER or anchor == E:
-            y -= h/2
-        elif anchor == SW or anchor == S or anchor == SE:
-            y -= h
+        # Adjust the x, y positions using common function
+        x, y = adjustTopLeftCorner((x, y), desiredAnchor, givenAnchor, w, h)
 
         self.x: float = x
         self.y: float = y
@@ -76,8 +69,10 @@ class OvalCollider(Collider):
     Collider logic for a basic box object.
     '''
 
-    def __init__(self, x: float, y: float, r: Tuple[float, float]):
+    def __init__(self, x: float, y: float, r: Tuple[float, float], desiredAnchor: str = CENTER, givenAnchor: str = CENTER):
         Collider.__init__(self)
+
+        x, y = adjustTopLeftCorner((x, y), desiredAnchor, givenAnchor, r[0], r[1])
 
         self.x: float = x
         self.y: float = y

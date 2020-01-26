@@ -20,6 +20,7 @@ from ..base import initializeFonts
 
 from ..objects import Oval
 from ..objects import Button
+from ..objects import Text
 
 
 ###################
@@ -77,22 +78,30 @@ class Game:
         width = self.width // cols
         height = self.height // rows
 
-        for x in range(cols):
-            for y in range(rows):
-                button = Oval(
-                    self.canvas,
-                    (x / cols, y / rows),
-                    (30 / self.width, 30 / self.height)
-                )
+        # for x in range(cols):
+        #     for y in range(rows):
+        #         button = Oval(
+        #             self.canvas,
+        #             (x / cols, y / rows),
+        #             (30 / self.width, 30 / self.height)
+        #         )
 
-                self.addGameObject(button)
+        #         self.addGameObject(button)
         
         self.addGameObject(
             Button(
                 self.canvas,
-                (.6, .51),
-                "test",
-                24
+                (0, 0),
+                .05,
+                .02
+            )
+        )
+
+        self.addGameObject(
+            Text(
+                self.canvas,
+                (.5, .5),
+                "HELLO WORLD",
             )
         )
 
