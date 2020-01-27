@@ -10,9 +10,6 @@ from typing import Tuple
 from ..base.collider import OvalCollider
 from ..base.gameObject import GameObject
 
-from ..base import EVENT_TYPE
-from ..base import TGEEvent
-
 
 class Oval(GameObject):
     '''
@@ -50,39 +47,9 @@ class Oval(GameObject):
             (collider.y + collider.r[1]) * self.initialScreenHeight,
             fill = "grey")
 
-    def move(self):
-        
-        self.canvas.move(self.ID, 1, 1)
-
-        self.collider.x += 1
-        self.collider.y += 1
-
-    def _handleEvent(self, event: TGEEvent):
-        if event.type == EVENT_TYPE.MOUSE_MOTION:
-            self.checkHover((event.mouseX, event.mouseY))
-    
     def _resize(self, newWidth: int, newHeight: int):
         '''
         Resize the circle
         '''
 
         self.canvas.scale(self.ID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
-
-    def checkHover(self, point: Tuple[int]):
-        '''
-
-        '''
-
-        if self.isPointInside(point):
-            if not self.hovered:
-
-                self.canvas.itemconfig(self.ID, fill = "yellow")
-                self.hovered = True
-
-        else:
-
-            if self.hovered:
-
-                self.canvas.itemconfig(self.ID, fill = "grey")
-                self.hovered = False
-    

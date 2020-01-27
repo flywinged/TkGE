@@ -15,6 +15,22 @@ from ..base import fonts
 class Text(GameObject):
     '''
     Base class for text gameObjects. 
+
+    Parameters
+    ----------
+    canvas - tkinter canvas object.
+
+    position - where to place the text object on the screen (0-1)
+
+    text - text string of what to display
+
+    font - Name of a font. "Courier" "Times New Roman" etc.
+
+    fontSize - int for font size. See fonts.py file to see the minimum and maximum sizes.
+
+    textColor - HexColor "#fff" is white "#ff00ff" is purple.
+
+    anchor - tkinter anchor value (NW, S, CENTER, etc.)
     '''
 
     def __init__(
@@ -24,6 +40,7 @@ class Text(GameObject):
                 text: str,
                 font: str = "Courier",
                 fontSize: int = 12,
+                textColor: str = "#fff",
                 anchor: str = CENTER,
                 **kwargs
             ):
@@ -49,7 +66,7 @@ class Text(GameObject):
             self.collider.x * self.initialScreenWidth,
             self.collider.y * self.initialScreenHeight,
             text = self.text,
-            fill = "white",
+            fill = textColor,
             anchor = anchor,
             font = self.font[self.currentFontSize]
         )
