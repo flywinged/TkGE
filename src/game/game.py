@@ -24,6 +24,7 @@ from ..base import BUTTONS
 
 from ..objects import Oval
 from ..objects import Text
+from ..objects import Rect
 
 
 ###################
@@ -85,11 +86,13 @@ class Game:
         self.gameObjects: Dict[int, GameObject] = {}
 
         self.addGameObject(
-            Oval(
+            Rect(
                 self.canvas,
                 (.5, .5),
-                (.1, .1),
-                anchor=NE
+                .2,
+                .3,
+                fillColor=(.3, .3, .8),
+                anchor=CENTER
             )
         )
 
@@ -164,6 +167,8 @@ class Game:
         
         motionEvent.mouseX = event.x / int(self.canvas.cget("width"))
         motionEvent.mouseY = event.y / int(self.canvas.cget("height"))
+
+        print(motionEvent)
 
         self.eventThread.eventQueue.append(motionEvent)
 

@@ -2,6 +2,7 @@
 # Tkinter imports
 from tkinter import Canvas
 from tkinter import CENTER
+from tkinter import NW
 from tkinter.font import Font
 
 # Python imports
@@ -67,7 +68,7 @@ class Text(GameObject):
             self.collider.y * self.initialScreenHeight,
             text = self.text,
             fill = textColor,
-            anchor = anchor,
+            anchor = NW, # Anchor is always NW because the collider normalizes all points to be this way
             font = self.font[self.currentFontSize]
         )
     

@@ -39,7 +39,7 @@ def adjustTopLeftCorner(position: Tuple[float, float], anchor: str, width: float
     
     # Then handle the Y values
     if anchor in [W, CENTER, E]:
-        y -= height /2
+        y -= height / 2
     elif anchor in [SW, S, SE]:
         y -= height
 
