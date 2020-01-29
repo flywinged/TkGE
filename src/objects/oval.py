@@ -10,6 +10,7 @@ from typing import Tuple
 from ..base.collider import OvalCollider
 from ..base.gameObject import GameObject
 
+from ..common import convertRGBToHex
 
 class Oval(GameObject):
     '''
@@ -17,11 +18,15 @@ class Oval(GameObject):
 
     Parameters
     ----------
-    @param canvas - tkinter canvas object. This should be the main game canvas.
+    canvas - tkinter canvas object. This should be the main game canvas.
 
-    @param position - (x(float), y(float)) normalized position of the oval on the screen. (.5, .5) puts the oval in the center of the screen
+    position - (x(float), y(float)) normalized position of the oval on the screen. (.5, .5) puts the oval in the center of the screen
 
-    @param radius - (x(float), y(float)) normalized radii of the oval along the x and y axis.
+    radius - (x(float), y(float)) normalized radii of the oval along the x and y axis.
+
+    fillColor - (r, g, b) float values from (0, 1). Color to fill in the rectangle.
+
+    anchor - tkinter anchor value (NW, S, CENTER, etc.)
     '''
 
     def __init__(
@@ -29,6 +34,7 @@ class Oval(GameObject):
             canvas: Canvas,
             position: Tuple[int],
             radius: Tuple[float, float],
+            fillColor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
             anchor: str = CENTER,
             **kwargs
             ):
@@ -37,15 +43,15 @@ class Oval(GameObject):
         collider = OvalCollider(position[0], position[1], radius, anchor=anchor)
         GameObject.__init__(self, canvas, collider = collider, **kwargs)
 
-        # 
-        self.hovered: bool = False
+        # Base fill color for the oval
+        self.fillColor: Tuple[float, float, float] - fillColor
 
         self.ID: int = self.canvas.create_oval(
             (collider.x - collider.r[0]) * self.initialScreenWidth,
             (collider.y - collider.r[1]) * self.initialScreenHeight,
             (collider.x + collider.r[0]) * self.initialScreenWidth,
             (collider.y + collider.r[1]) * self.initialScreenHeight,
-            fill = "grey")
+            fill = convertRGBToHex(self.fillColor))
 
     def _resize(self, newWidth: int, newHeight: int):
         '''

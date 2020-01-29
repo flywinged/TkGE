@@ -14,7 +14,19 @@ from ..common import convertRGBToHex
 
 class Rect(GameObject):
     '''
+    Basic rectangle. Forced to be parallel to x and y axis.
 
+    Parameters
+    ----------
+    canvas - tkinter canvas object.
+
+    position - where to place the text object on the screen (0, 1)
+
+    width, height - width and height of the rectangle in normalized screen coordinates.
+
+    fillColor - (r, g, b) float values from (0, 1). Color to fill in the rectangle.
+
+    anchor - tkinter anchor value (NW, S, CENTER, etc.)
     '''
 
     def __init__(
