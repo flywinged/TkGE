@@ -32,9 +32,9 @@ class Rect(GameObject):
     def __init__(
             self,
             canvas: Canvas,
-            position: Tuple[int],
-            width: int,
-            height: int,
+            position: Tuple[float, float],
+            width: float,
+            height: float,
             fillColor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
             anchor: str = CENTER,
             **kwargs
@@ -49,10 +49,7 @@ class Rect(GameObject):
         self.fillColor: Tuple[float, float, float] = fillColor
 
         self.rectID: int = self.canvas.create_rectangle(
-            (self.collider.x) * self.initialScreenWidth,
-            (self.collider.y) * self.initialScreenHeight,
-            (self.collider.x + width) * self.initialScreenWidth,
-            (self.collider.y + height) * self.initialScreenHeight,
+            *self.collider.getCoords(self.initialScreenWidth, self.initialScreenHeight),
             fill = convertRGBToHex(fillColor))
     
     def _resize(self, newWidth: int, newHeight: int):
@@ -60,6 +57,6 @@ class Rect(GameObject):
         Resize the button
         '''
 
-        self.canvas.scale(self.rectID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
+        self.canvas.scale(self.rectID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
     

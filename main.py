@@ -4,4 +4,4 @@ from src import GameState
 gs = GameState()
 g = Game(gs)
 
-g.start()
+g.play()

@@ -81,7 +81,7 @@ class Text(GameObject):
         '''
 
         # Rescale all the objects on the canvas using tkinter's builtin scale call
-        self.canvas.scale(self.textID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
+        self.canvas.scale(self.textID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
         # May need to create different sized text as the size is adjusted. Do this here.
         textSize = int(self.initialFontSize * newWidth / self.initialScreenWidth)

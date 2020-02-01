@@ -83,26 +83,6 @@ class Game:
         # INITIALIZE #
         self.initialize()
 
-        self.addGameObject(
-            Rect(
-                self.canvas,
-                (.5, .5),
-                .2,
-                .3,
-                fillColor=(.3, .3, .8),
-                anchor=CENTER
-            )
-        )
-
-        self.addGameObject(
-            Text(
-                self.canvas,
-                (.5, .5),
-                "HELLO WORLD",
-                anchor=CENTER
-            )
-        )
-
 
     ############################
     # INITIALIZATION FUNCTIONS #
@@ -180,6 +160,8 @@ class Game:
 
         self.root.bind_all("<KeyPress>", self.keyPressCallback)
         self.root.bind_all("<KeyRelease>", self.keyReleaseEvent)
+
+        self.root.protocol("WM_DELETE_WINDOW", self.programCloseEvent)
 
     def motionCallback(self, event: Event):
         '''
@@ -291,6 +273,21 @@ class Game:
         # Add the event to the thread
         self.eventThread.eventQueue.append(keyReleaseEvent)
 
+    def programCloseEvent(self):
+        '''
+        Starts the program close process.
+        '''
+
+        # Tell both the active threads to start shutting down
+        self.eventThread.isActive = False
+        self.updateThread.isActive = False
+    
+        # As long as the threads are still active, dont destroy the root
+        if not (self.eventThread.complete and self.updateThread.complete):
+            self.root.after(10, self.programCloseEvent)
+        else:
+            self.root.destroy()
+
 
     ########################
     # GAME STATE FUNCTIONS #
@@ -342,7 +339,7 @@ class Game:
     # START THE GAME #
     ##################
 
-    def start(self):
+    def play(self):
         '''
         Start all the threads for the game before beginning the tkinter main loop.
         '''
@@ -353,10 +350,6 @@ class Game:
         
         # Begin the tkinter loop
         self.root.mainloop()
-
-        # Shutdown all the threads before killing the program
-        self.eventThread.isActive = False
-        self.updateThread.isActive = False
 
 
 ################
@@ -383,6 +376,9 @@ class EventThread(Thread):
 
         # Control for killing the thread from outside
         self.isActive: bool = True
+
+        # Whether or not the thread has succesfully finished
+        self.complete: bool = False
     
     def run(self):
 
@@ -452,6 +448,8 @@ class EventThread(Thread):
             # Once all the events have been processed, wait a small amount of time to keep the thread from using too much processing power
             time.sleep(.001)
 
+        self.complete = True
+        print("Closed Event Thread")
 
 #################
 # UPDATE THREAD #
@@ -474,6 +472,9 @@ class UpdateThread(Thread):
 
         # Control for killing the thread from elsewhere
         self.isActive: bool = True
+
+        # Whether or not the thread has succesfully finished
+        self.complete: bool = False
     
     def run(self):
 
@@ -495,5 +496,8 @@ class UpdateThread(Thread):
             # Now wait for the appropriate amount of time specified by self.game.updateDelay
             # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
             time.sleep(.001)
-            while (getTime() - self.game.gameState.now < (self.game.updateDelay / 1000)) and self.isActive:
+            while self.isActive and (getTime() - self.game.gameState.now < (self.game.updateDelay / 1000)):
                 time.sleep(.001)
+        
+        self.complete = True
+        print("Closed Update Thread")

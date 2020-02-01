@@ -37,10 +37,10 @@ class GameObject:
 
         # To remember the size of the screen
         self.initialScreenWidth: int = int(self.canvas.cget("width"))
-        self.initialScreenHeight: int = int(self.canvas.cget("width"))
+        self.initialScreenHeight: int = int(self.canvas.cget("height"))
 
-        self.lastScreenWidth: int = int(self.canvas.cget("width"))
-        self.lastScreenHeight: int = int(self.canvas.cget("width"))
+        self.currentScreenWidth: int = int(self.canvas.cget("width"))
+        self.currentScreenHeight: int = int(self.canvas.cget("height"))
 
         # GameObject ID
         self.ID: int = GameObject.getNextID()
@@ -71,8 +71,8 @@ class GameObject:
         self._resize(newWidth, newHeight)
 
         # Update the old width variables
-        self.lastScreenWidth = newWidth
-        self.lastScreenHeight = newHeight
+        self.currentScreenWidth = newWidth
+        self.currentScreenHeight = newHeight
 
 
     ##################

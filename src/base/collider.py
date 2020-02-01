@@ -62,6 +62,15 @@ class BoxCollider(Collider):
         '''
 
         return (point[0] >= self.x and point[0] <= self.x + self.w and point[1] >= self.y and point[1] <= self.y + self.h)
+    
+    def getCoords(self, screenWidth: int, screenHeight: int):
+
+        return (
+            screenWidth * (self.x),
+            screenHeight* (self.y),
+            screenWidth * (self.x + self.w),
+            screenHeight* (self.y + self.h)
+        )
 
 
 class OvalCollider(Collider):
@@ -86,3 +95,14 @@ class OvalCollider(Collider):
         normalizedDistance = (((point[0] - self.x) * self.r[1])**2 + ((point[1] - self.y) * self.r[0])**2)
         return (normalizedDistance <= self.r[0]**2 * self.r[1]**2)
     
+    def getCoords(self, screenWidth: int, screenHeight: int):
+        '''
+        Return x1, y1, x2, y2
+        '''
+
+        return (
+            (self.x - self.r[0]) * screenWidth,
+            (self.y - self.r[1]) * screenHeight,
+            (self.x + self.r[0]) * screenWidth,
+            (self.y + self.r[1]) * screenHeight,
+        )

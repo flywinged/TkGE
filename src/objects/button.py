@@ -58,7 +58,7 @@ class Button(GameObject):
         Resize the button
         '''
 
-        self.canvas.scale(self.rectID, 0, 0, newWidth / self.lastScreenWidth, newHeight / self.lastScreenHeight)
+        self.canvas.scale(self.rectID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
     def checkHover(self, point: Tuple[int]):
         '''
