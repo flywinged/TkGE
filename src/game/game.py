@@ -19,8 +19,8 @@ from ..base import initializeFonts
 
 from ..base import TGEEvent
 from ..base import EVENT_TYPE
-from ..base import INPUT_STATE
 from ..base import BUTTONS
+from ..base import InputState
 from ..base import GameState
 
 from ..common import getTime
@@ -190,7 +190,7 @@ class Game:
         motionEvent = TGEEvent()
 
         # If there are no buttons currently held down in the state, just create a normal mouse motion event
-        if len(INPUT_STATE.pressedButtons) == 0:
+        if len(self.gameState.inputState.pressedButtons) == 0:
             motionEvent.type = EVENT_TYPE.MOUSE_MOTION
         
         # Otherwise, create a mouse drag event
@@ -236,7 +236,7 @@ class Game:
         clickEvent.button = mouseButton
 
         # Make sure the button is not already pressed
-        if clickEvent.button not in INPUT_STATE.pressedButtons:
+        if clickEvent.button not in self.gameState.inputState.pressedButtons:
             self.eventThread.eventQueue.append(clickEvent)
 
     def mouseReleaseCallback(self, event: Event):
@@ -274,7 +274,7 @@ class Game:
         keyPressEvent.keysym = event.keysym.lower()
 
         # Make sure that the keysym is not already pressed
-        if keyPressEvent.keysym not in INPUT_STATE.pressedKeys:
+        if keyPressEvent.keysym not in self.gameState.inputState.pressedKeys:
             self.eventThread.eventQueue.append(keyPressEvent)
 
     def keyReleaseEvent(self, event: Event):
@@ -420,34 +420,34 @@ class EventThread(Thread):
                     gameObject.handleEvent(event)
                 
                 ######################
-                # INPUT_STATE UPDATE #
+                # INPUT STATE UPDATE #
                 ######################
                 
                 # Mouse Motion
                 if event.type == EVENT_TYPE.MOUSE_MOTION or event.type == EVENT_TYPE.MOUSE_DRAG:
 
-                    INPUT_STATE.mouseX = event.mouseX
-                    INPUT_STATE.mouseY = event.mouseY                
+                    self.game.gameState.inputState.mouseX = event.mouseX
+                    self.game.gameState.inputState.mouseY = event.mouseY                
 
                 # Mouse Click
                 elif event.type == EVENT_TYPE.MOUSE_CLICK:
 
-                    INPUT_STATE.pressedButtons.add(event.button)
+                    self.game.gameState.inputState.pressedButtons.add(event.button)
                 
                 # Mouse Release
-                elif event.type == EVENT_TYPE.MOUSE_RELEASE and event.button in INPUT_STATE.pressedButtons:
+                elif event.type == EVENT_TYPE.MOUSE_RELEASE and event.button in self.game.gameState.inputState.pressedButtons:
 
-                    INPUT_STATE.pressedButtons.remove(event.button)
+                    self.game.gameState.inputState.pressedButtons.remove(event.button)
 
                 # Key Press
                 elif event.type == EVENT_TYPE.KEY_PRESS:
 
-                    INPUT_STATE.pressedKeys.add(event.keysym)
+                    self.game.gameState.inputState.pressedKeys.add(event.keysym)
                 
                 # Key Release
-                elif event.type == EVENT_TYPE.KEY_RELEASE and event.keysym in INPUT_STATE.pressedKeys:
+                elif event.type == EVENT_TYPE.KEY_RELEASE and event.keysym in self.game.gameState.inputState.pressedKeys:
 
-                    INPUT_STATE.pressedKeys.remove(event.keysym)
+                    self.game.gameState.inputState.pressedKeys.remove(event.keysym)
 
             # Once all the events have been processed, wait a small amount of time to keep the thread from using too much processing power
             time.sleep(.001)

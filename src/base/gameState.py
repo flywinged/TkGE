@@ -2,6 +2,22 @@ from ..common import getTime
 
 import pickle
 
+from typing import Set
+
+from dataclasses import dataclass
+
+@dataclass
+class InputState:
+    '''
+    Keeps track of the current input state of the application.
+    '''
+
+    mouseX: float = 0.0
+    mouseY: float = 0.0
+
+    pressedKeys: Set[str] = None
+    pressedButtons: Set[int] = None
+
 class GameState:
     '''
     General gameState class. A custom gameState should be created for each application to enable nice type-hints.
@@ -17,6 +33,13 @@ class GameState:
 
         # The last gameState time (in seconds)
         self.last: float = getTime()
+
+        # Create the input state. This includes buttons that are pressed, keys, etc.
+        self.inputState: InputState = InputState()
+
+        # Assign all the mutable variables
+        self.inputState.pressedKeys = set()
+        self.inputState.pressedButtons = set()
 
     ######################
     # SAVING AND LOADING #

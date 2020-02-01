@@ -28,26 +28,6 @@ class BUTTONS(Enum):
     MIDDLE_CLICK: int = auto()
     RIGHT_CLICK: int = auto()
 
-
-@dataclass
-class InputState:
-    '''
-    Keeps track of the current input state of the application.
-    '''
-
-    mouseX: float = 0.0
-    mouseY: float = 0.0
-
-    pressedKeys: Set[str] = None
-    pressedButtons: Set[int] = None
-
-# Create the input set
-INPUT_STATE = InputState()
-
-# Assign all the mutable variables
-INPUT_STATE.pressedKeys = set()
-INPUT_STATE.pressedButtons = set()
-
 @dataclass
 class TGEEvent:
     '''

@@ -15,9 +15,9 @@ from .gameObject import GameObject
 
 # GameState imports
 from .gameState import GameState
+from .gameState import InputState
 
 # Event imports
 from .event import TGEEvent
 from .event import EVENT_TYPE
-from .event import INPUT_STATE
 from .event import BUTTONS
