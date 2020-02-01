@@ -21,6 +21,9 @@ from ..base import TGEEvent
 from ..base import EVENT_TYPE
 from ..base import INPUT_STATE
 from ..base import BUTTONS
+from ..base import GameState
+
+from ..common import getTime
 
 from ..objects import Oval
 from ..objects import Text
@@ -34,9 +37,23 @@ from ..objects import Rect
 class Game:
     '''
     A Game object contains all the logic necessary for the game loop.
+
+    Parameters
+    ----------
+    gameState - GameState object or any object which inherits from gameState.
+
+    TODO: Use variable aspect ratio. Figure this out later though.
+    width - Initial pixel width of the game window. Determines the aspect ratio of the game which is locked.
+
+    height - Initial pixel height of the game window. Determines the aspect ratio of the game which is locked.
+
+    updateDelay - Time (in ms) between succesive update calls
     '''
 
-    def __init__(self, width = 1280, height = 720, frameDelay: int = 17):
+    def __init__(self, gameState: GameState, width = 1280, height = 720, updateDelay: float = 17):
+
+        # Set the gameState
+        self.gameState: GameState = gameState
 
         # Initial width and height, in pixels, of the game
         self.width: int = width
@@ -45,11 +62,14 @@ class Game:
         # Aspect ratio of the game window. If forceAspect Ratio is set, it 
         self.aspectRatio: float = self.width / self.height
 
-        # How long (ms) between screen updates.
-        self.frameDelay: int = frameDelay
+        # How long (ms) between state updates.
+        self.updateDelay: float = updateDelay
 
         # Create the event thread object. Manage all user inputs
         self.eventThread: EventThread = EventThread(self)
+
+        # Create the updateThread object. Manage time-based updates
+        self.updateThread: UpdateThread = UpdateThread(self)
 
         # Create the tk root and initialize the canvas and padFrame
         self.root = Tk()
@@ -57,33 +77,11 @@ class Game:
         self.padFrame.grid(row = 0, column = 0, sticky="nsew")
         self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
 
-        # Bind the tkinter configure action in order to force the aspect ratio of the canvas to always be consistent
-        self.setAspectRatio()
-
-        # TODO: Figure out what all this row and column configure business does.
-        self.root.rowconfigure(0, weight = 1)
-        self.root.columnconfigure(0, weight = 1)
-
-
-        ##########
-        # EVENTS #
-        ##########
-        self.root.bind_all("<Motion>", self.motionCallback)
-
-        self.root.bind_all("<MouseWheel>", self.mouseWheelCallback)
-
-        self.root.bind_all("<ButtonPress>", self.mouseClickCallback)
-        self.root.bind_all("<ButtonRelease>", self.mouseReleaseCallback)
-
-        self.root.bind_all("<KeyPress>", self.keyPressCallback)
-        self.root.bind_all("<KeyRelease>", self.keyReleaseEvent)
-
-
-        # Initialize everything which gameObject could ever use. For now, that is just the fonts
-        initializeFonts()
-
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
+
+        # INITIALIZE #
+        self.initialize()
 
         self.addGameObject(
             Rect(
@@ -109,6 +107,21 @@ class Game:
     ############################
     # INITIALIZATION FUNCTIONS #
     ############################
+
+    def initialize(self):
+        '''
+        Call everything necessary to get the game up and running.
+        '''
+
+        # Initialize all the font objects from the base.fonts file
+        initializeFonts()
+
+        # Lock the game's aspect ratio to whatever the current width and height are
+        self.setAspectRatio()
+
+        # Bind all the event callbacks
+        self.bindCallbacks()
+
 
     def setAspectRatio(self):
         '''
@@ -144,10 +157,29 @@ class Game:
 
         self.padFrame.bind("<Configure>", enforceAspectRatio)
 
+        # TODO: Figure out what all this row and column configure business does.
+        self.root.rowconfigure(0, weight = 1)
+        self.root.columnconfigure(0, weight = 1)
+
 
     #############
     # CALLBACKS #
     #############
+
+    def bindCallbacks(self):
+        '''
+        Bind all the callbacks to root.
+        '''
+
+        self.root.bind_all("<Motion>", self.motionCallback)
+
+        self.root.bind_all("<MouseWheel>", self.mouseWheelCallback)
+
+        self.root.bind_all("<ButtonPress>", self.mouseClickCallback)
+        self.root.bind_all("<ButtonRelease>", self.mouseReleaseCallback)
+
+        self.root.bind_all("<KeyPress>", self.keyPressCallback)
+        self.root.bind_all("<KeyRelease>", self.keyReleaseEvent)
 
     def motionCallback(self, event: Event):
         '''
@@ -167,8 +199,6 @@ class Game:
         
         motionEvent.mouseX = event.x / int(self.canvas.cget("width"))
         motionEvent.mouseY = event.y / int(self.canvas.cget("height"))
-
-        print(motionEvent)
 
         self.eventThread.eventQueue.append(motionEvent)
 
@@ -261,6 +291,26 @@ class Game:
         # Add the event to the thread
         self.eventThread.eventQueue.append(keyReleaseEvent)
 
+
+    ########################
+    # GAME STATE FUNCTIONS #
+    ########################
+
+    def updateBefore(self):
+        '''
+        This gets called ever update call before any of the gameObjects are updated
+        '''
+
+        # Virtual function to overwrite by children
+    
+    def updateAfter(self):
+        '''
+        This gets called ever update call after all of the gameObjects are updated
+        '''
+
+        # Virtual function to overwrite by children
+
+
     ########################
     # GAMEOBJECT FUNCTIONS #
     ########################
@@ -288,14 +338,25 @@ class Game:
             yield self.gameObjects[ID]
 
 
+    ##################
+    # START THE GAME #
+    ##################
+
     def start(self):
-        initializeFonts()
+        '''
+        Start all the threads for the game before beginning the tkinter main loop.
+        '''
 
+        # Start all the game threads
         self.eventThread.start()
-
+        self.updateThread.start()
+        
+        # Begin the tkinter loop
         self.root.mainloop()
 
+        # Shutdown all the threads before killing the program
         self.eventThread.isActive = False
+        self.updateThread.isActive = False
 
 
 ################
@@ -305,35 +366,59 @@ class Game:
 class EventThread(Thread):
     '''
     Thread to handle all of the events which will come through the game.
+
+    Parameters
+    ----------
+    game: Game instance. The thread needs a reference in order to access the gameObjects
     '''
 
     def __init__(self, game: Game):
         Thread.__init__(self)
 
+        # Assign the game reference
         self.game: Game = game
 
+        # List of TGEEvents. First in, first out
         self.eventQueue: List[TGEEvent] = []
+
+        # Control for killing the thread from outside
         self.isActive: bool = True
     
     def run(self):
 
+        # Define mousemotion events outside of the run loop so it's easier to read
+        mouseMotionTypes = {EVENT_TYPE.MOUSE_MOTION, EVENT_TYPE.MOUSE_DRAG}
+
         while self.isActive:
 
-            while len(self.eventQueue) > 0:
+            # As long as there are events in the queue, we want to process them.
+            while len(self.eventQueue) > 0 and self.isActive:
 
-                # Lower the amount of checks for mouse motion
-                motionIndex = 0
-                while motionIndex + 1 < len(self.eventQueue) and self.eventQueue[motionIndex + 1].type == EVENT_TYPE.MOUSE_MOTION:
-                    motionIndex += 1
-                if motionIndex > 0:
-                    self.eventQueue = self.eventQueue[motionIndex:]
+                # Lower the amount of checks for mouse motion or mouse dragging
+
+                # We only need to check for multiple mouse motion events if the event we are going to process on
+                #   this iteration is a mouse motion event and there is more than one event in the queue
+                if self.eventQueue[0].type in mouseMotionTypes and len(self.eventQueue) > 0:
+
+                    # Define the current index which had motion
+                    motionIndex = 0
+
+                    # Determine what type of motion event is queued
+                    motionType = self.eventQueue[motionIndex].type
+
+                    # Find the last motion index which still has the event type MOUSE_MOTION
+                    while motionIndex + 1 < len(self.eventQueue) and self.eventQueue[motionIndex + 1].type == motionType:
+                        motionIndex += 1
+                
+                    # If there were multiple mouse motion events in the queue, remove all the duplicate ones
+                    if motionIndex > 0:
+                        self.eventQueue = self.eventQueue[motionIndex:]
 
                 # Get the next event in the queue and pass it to all gameObjects
                 event = self.eventQueue.pop(0)
                 for gameObject in self.game.getAllGameObjects():
                     gameObject.handleEvent(event)
                 
-
                 ######################
                 # INPUT_STATE UPDATE #
                 ######################
@@ -364,4 +449,51 @@ class EventThread(Thread):
 
                     INPUT_STATE.pressedKeys.remove(event.keysym)
 
+            # Once all the events have been processed, wait a small amount of time to keep the thread from using too much processing power
             time.sleep(.001)
+
+
+#################
+# UPDATE THREAD #
+#################
+
+class UpdateThread(Thread):
+    '''
+    Thread to handle all the time-based game updates.
+
+    Parameters
+    ----------
+    game: Game instance. The thread needs a reference in order to access the gameObjects
+    '''
+
+    def __init__(self, game: Game):
+        Thread.__init__(self)
+
+        # Assign the game reference
+        self.game: Game = game
+
+        # Control for killing the thread from elsewhere
+        self.isActive: bool = True
+    
+    def run(self):
+
+        while self.isActive:
+
+            # Update the time for the game state before doing anything else
+            self.game.gameState.updateTime()
+
+            # First call games before update call
+            self.game.updateBefore()
+
+            # Now update each of the gameObjects
+            for gameObject in self.game.getAllGameObjects():
+                gameObject.update(self.game.gameState)
+
+            # Now call the update after
+            self.game.updateAfter()
+
+            # Now wait for the appropriate amount of time specified by self.game.updateDelay
+            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
+            time.sleep(.001)
+            while (getTime() - self.game.gameState.now < (self.game.updateDelay / 1000)) and self.isActive:
+                time.sleep(.001)

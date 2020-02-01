@@ -8,6 +8,7 @@ from typing import Tuple
 # Package imports
 from .collider import Collider
 from .event import TGEEvent
+from .gameState import GameState
 
 class GameObject:
     '''
@@ -51,15 +52,14 @@ class GameObject:
 
     def __hash__(self):
         return self.ID
-    
-    def _handleEvent(self, event: TGEEvent):
-        '''
-        Virtual function to overwrite
-        '''
 
+
+    ############
+    # RESIZING #
+    ############
     def _resize(self, newWidth: int, newHeight: int):
         '''
-        Cirtual function to overwrite
+        Virtual function to overwrite
         '''
 
     def resize(self, newWidth: int, newHeight: int):
@@ -74,12 +74,37 @@ class GameObject:
         self.lastScreenWidth = newWidth
         self.lastScreenHeight = newHeight
 
+
+    ##################
+    # EVENT HANDLING #
+    ##################
+    def _handleEvent(self, event: TGEEvent):
+        '''
+        Virtual function to overwrite
+        '''
+
     def handleEvent(self, event: TGEEvent):
         '''
         Basic event handler filter
         '''
 
         self._handleEvent(event)
+
+
+    ##########
+    # UPDATE #
+    ##########
+    def _update(self, gameState: GameState):
+        '''
+        Virtual function to overwrite
+        '''
+
+    def update(self, gameState: GameState):
+        '''
+        Basic update handler.
+        '''
+
+        self._update(gameState)
 
     def isPointInside(self, point: Tuple[int]):
         '''

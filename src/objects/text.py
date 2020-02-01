@@ -58,7 +58,7 @@ class Text(GameObject):
         # Set the values for text
         self.text: str = text
         self.font: Dict[int, Font] = fonts.FONTS[font]
-        self.fillColor: Tuple[float, float, float] = fillColor
+        self.textColor: Tuple[float, float, float] = textColor
 
         # Set up the collider for the text.
         w = self.font[self.currentFontSize].measure(text) / self.initialScreenWidth

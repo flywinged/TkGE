@@ -1,3 +1,5 @@
+from ..common import getTime
+
 import pickle
 
 class GameState:
@@ -9,6 +11,12 @@ class GameState:
 
     def __init__(self):
         self.__dict__ = {}
+
+        # The current gameState time (in seconds)
+        self.now: float = getTime()
+
+        # The last gameState time (in seconds)
+        self.last: float = getTime()
 
     ######################
     # SAVING AND LOADING #
@@ -38,3 +46,23 @@ class GameState:
             gameState.__dict__ = pickle.load(f)
 
         return gameState
+    
+
+    ##########
+    # TIMING #
+    ##########
+
+    def updateTime(self):
+        '''
+        Updates self.now and self.last. This function will be called before every game update.
+        '''
+
+        self.last = self.now
+        self.now = getTime()
+    
+    def getFrameTime(self):
+        '''
+        Returns how long the last call of update was ago (in seconds)
+        '''
+
+        return self.now - self.last

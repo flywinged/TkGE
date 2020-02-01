@@ -1,5 +1,7 @@
 from src import Game
+from src import GameState
 
-g = Game()
+gs = GameState()
+g = Game(gs)
 
 g.start()

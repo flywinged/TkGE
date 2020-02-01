@@ -13,6 +13,9 @@ from .fonts import initializeFonts
 # GameObject imports
 from .gameObject import GameObject
 
+# GameState imports
+from .gameState import GameState
+
 # Event imports
 from .event import TGEEvent
 from .event import EVENT_TYPE
