@@ -29,6 +29,9 @@ class PlayerPaddle(Rect):
                 self.collider.y = 1.0 - self.collider.h
 
             self.canvas.coords(self.rectID, self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight))
+    
+    def update(self, gameState: PongState):
+        gameState.playerPaddleLocation = self.collider.y + self.collider.h / 2
 
 class EnemyPaddle(Rect):
     '''
@@ -52,5 +55,6 @@ class EnemyPaddle(Rect):
             ballCenterY = 1.0 - self.collider.h
         
         self.collider.y = ballCenterY
+        gameState.enemyPaddleLocation = ballCenterY + self.collider.h / 2
 
         self.canvas.coords(self.rectID, self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight))

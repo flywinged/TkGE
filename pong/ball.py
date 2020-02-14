@@ -44,6 +44,28 @@ class Ball(Oval):
                 gameState.ballVelocity[0],
                 -gameState.ballVelocity[1]
             )
+        
+        if gameState.ballLocation[0] < self.collider.r[0] + 0.01 and abs(gameState.ballLocation[1] - gameState.playerPaddleLocation) < .1: # 0.005 is the width of a paddle
+            gameState.ballLocation = (
+                -(gameState.ballLocation[0] - self.collider.r[0] - 0.01) + self.collider.r[0] + 0.01,
+                gameState.ballLocation[1]
+            )
+
+            gameState.ballVelocity = (
+                -gameState.ballVelocity[0],
+                gameState.ballVelocity[1]
+            )
+        
+        if gameState.ballLocation[0] + self.collider.r[0] + 0.01 > 1.0 and abs(gameState.ballLocation[1] - gameState.enemyPaddleLocation) < .1: # 0.005 is the width of a paddle
+            gameState.ballLocation = (
+                2.0 - (gameState.ballLocation[0] + self.collider.r[0] + 0.01) + self.collider.r[0] + 0.01,
+                gameState.ballLocation[1]
+            )
+
+            gameState.ballVelocity = (
+                -gameState.ballVelocity[0],
+                gameState.ballVelocity[1]
+            )
 
         self.collider.x = gameState.ballLocation[0]
         self.collider.y = gameState.ballLocation[1]
