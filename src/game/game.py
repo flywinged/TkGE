@@ -413,7 +413,7 @@ class EventThread(Thread):
                 # Get the next event in the queue and pass it to all gameObjects
                 event = self.eventQueue.pop(0)
                 for gameObject in self.game.getAllGameObjects():
-                    gameObject.handleEvent(event)
+                    gameObject.handleEvent(event, self.game.gameState)
                 
                 ######################
                 # INPUT STATE UPDATE #

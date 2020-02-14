@@ -9,6 +9,7 @@ from typing import Tuple
 # Package imports
 from ..base import BoxCollider
 from ..base import GameObject
+from ..base import GameState
 
 from ..base import TGEEvent
 from ..base import EVENT_TYPE
@@ -49,7 +50,7 @@ class Button(GameObject):
         self.collider.x += 1
         self.collider.y += 1
 
-    def _handleEvent(self, event: TGEEvent):
+    def _handleEvent(self, event: TGEEvent, gameState: GameState):
         if event.type == EVENT_TYPE.MOUSE_MOTION:
             self.checkHover((event.mouseX, event.mouseY))
     

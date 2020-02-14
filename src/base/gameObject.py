@@ -78,17 +78,17 @@ class GameObject:
     ##################
     # EVENT HANDLING #
     ##################
-    def _handleEvent(self, event: TGEEvent):
+    def _handleEvent(self, event: TGEEvent, gameState: GameState):
         '''
         Virtual function to overwrite
         '''
 
-    def handleEvent(self, event: TGEEvent):
+    def handleEvent(self, event: TGEEvent, gameState: GameState):
         '''
         Basic event handler filter
         '''
 
-        self._handleEvent(event)
+        self._handleEvent(event, gameState)
 
 
     ##########
