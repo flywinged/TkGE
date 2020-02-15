@@ -20,7 +20,7 @@ class PlayerPaddle(Rect):
 
         '''
 
-        if event.type == EVENT_TYPE.MOUSE_MOTION:
+        if event.type == EVENT_TYPE.MOUSE_MOTION or event.type == EVENT_TYPE.MOUSE_DRAG:
             self.collider.y = event.mouseY - self.collider.h / 2
 
             if self.collider.y < 0:
