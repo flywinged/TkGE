@@ -28,6 +28,12 @@ class BUTTONS(Enum):
     MIDDLE_CLICK: int = auto()
     RIGHT_CLICK: int = auto()
 
+# How the event was handled
+class EVENT_HANDLER(Enum):
+
+    CAPTURED: int = auto()
+    NOT_CAPTURED: int = auto()
+
 @dataclass
 class TGEEvent:
     '''

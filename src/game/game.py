@@ -20,6 +20,7 @@ from ..base import initializeFonts
 from ..base import TGEEvent
 from ..base import EVENT_TYPE
 from ..base import BUTTONS
+from ..base import EVENT_HANDLER
 from ..base import InputState
 from ..base import GameState
 
@@ -335,6 +336,17 @@ class Game:
             yield self.gameObjects[ID]
 
 
+    ###################
+    # EVENT FUNCTIONS #
+    ###################
+
+    def _handleEvent(self, event: TGEEvent):
+        '''
+        Virtual function to overwrite.
+        '''
+
+        return EVENT_HANDLER.NOT_CAPTURED
+
     ##################
     # START THE GAME #
     ##################
@@ -412,8 +424,14 @@ class EventThread(Thread):
 
                 # Get the next event in the queue and pass it to all gameObjects
                 event = self.eventQueue.pop(0)
-                for gameObject in self.game.getAllGameObjects():
-                    gameObject.handleEvent(event, self.game.gameState)
+
+                # Let the game try and handle the event first
+                if self.game._handleEvent(event) == EVENT_HANDLER.NOT_CAPTURED:
+                    for gameObject in self.game.getAllGameObjects():
+
+                        # If any of the game objects capture the event, none of the other ones should capture them
+                        if gameObject.handleEvent(event, self.game.gameState) == EVENT_HANDLER.CAPTURED:
+                            break
                 
                 ######################
                 # INPUT STATE UPDATE #

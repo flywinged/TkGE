@@ -8,6 +8,7 @@ from typing import Tuple
 # Package imports
 from .collider import Collider
 from .event import TGEEvent
+from .event import EVENT_HANDLER
 from .gameState import GameState
 
 class GameObject:
@@ -83,12 +84,14 @@ class GameObject:
         Virtual function to overwrite
         '''
 
+        return EVENT_HANDLER.NOT_CAPTURED
+
     def handleEvent(self, event: TGEEvent, gameState: GameState):
         '''
         Basic event handler filter
         '''
 
-        self._handleEvent(event, gameState)
+        return self._handleEvent(event, gameState)
 
 
     ##########

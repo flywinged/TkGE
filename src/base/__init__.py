@@ -21,3 +21,4 @@ from .gameState import InputState
 from .event import TGEEvent
 from .event import EVENT_TYPE
 from .event import BUTTONS
+from .event import EVENT_HANDLER
