@@ -4,6 +4,8 @@ from tkinter import Canvas, CENTER
 
 from .gameState import PongState
 
+import random
+
 class Ball(Oval):
     '''
 
@@ -41,14 +43,14 @@ class Ball(Oval):
 
             gameState.ballVelocity = (
                 abs(gameState.ballVelocity[0]),
-                gameState.ballVelocity[1]
+                random.random() - .5
             )
         
         if gameState.ballLocation[0] < 1.05 and gameState.ballLocation[0] + self.collider.r[0] + 0.01 > 1.0 and abs(gameState.ballLocation[1] - gameState.enemyPaddleLocation) < .1: # 0.005 is the width of a paddle
 
             gameState.ballVelocity = (
                 -abs(gameState.ballVelocity[0]),
-                gameState.ballVelocity[1]
+                random.random() - .5
             )
 
         self.collider.x = gameState.ballLocation[0]
