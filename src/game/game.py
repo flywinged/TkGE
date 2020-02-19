@@ -82,13 +82,6 @@ class Game:
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
 
-        polygon = Polygon(
-            self.canvas,
-            [(.5, .5), (.7, .5), (.5, .7)]
-        )
-
-        self.addGameObject(polygon)
-
         # INITIALIZE #
         self.initialize()
 
