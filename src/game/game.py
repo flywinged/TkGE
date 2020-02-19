@@ -26,12 +26,6 @@ from ..base import GameState
 
 from ..common import getTime
 
-from ..objects import Oval
-from ..objects import Text
-from ..objects import Rect
-from ..objects import Polygon
-
-
 ###################
 # BASE GAME CLASS #
 ###################

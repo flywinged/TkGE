@@ -12,9 +12,6 @@ from ..base.gameObject import GameObject
 
 from ..common import convertRGBToHex
 
-from ..base.event import TGEEvent, EVENT_TYPE
-from ..base.gameState import GameState
-
 class Polygon(GameObject):
     '''
     Oval object class definition.
@@ -23,9 +20,7 @@ class Polygon(GameObject):
     ----------
     canvas - tkinter canvas object. This should be the main game canvas.
 
-    position - (x(float), y(float)) normalized position of the oval on the screen. (.5, .5) puts the oval in the center of the screen
-
-    radius - (x(float), y(float)) normalized radii of the oval along the x and y axis. If only a single float is provided, it is assumed to be the radius with respect to height.
+    points - List of points describing the edges of the polygon
 
     fillColor - (r, g, b) float values from (0, 1). Color to fill in the rectangle.
 
