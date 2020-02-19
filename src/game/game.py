@@ -29,6 +29,7 @@ from ..common import getTime
 from ..objects import Oval
 from ..objects import Text
 from ..objects import Rect
+from ..objects import Polygon
 
 
 ###################
@@ -80,6 +81,13 @@ class Game:
 
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
+
+        polygon = Polygon(
+            self.canvas,
+            [(.5, .5), (.7, .5), (.5, .7)]
+        )
+
+        self.addGameObject(polygon)
 
         # INITIALIZE #
         self.initialize()
@@ -322,9 +330,10 @@ class Game:
     
     def removeGameObject(self, gameObject: GameObject):
         '''
-        Remove a gameObject from the gameObjects dictionary
+        Remove a gameObject from the gameObjects dictionary and from the canvas
         '''
 
+        self.gameObjects[gameObject.ID].delete()
         del self.gameObjects[gameObject.ID]
     
     def getAllGameObjects(self) -> GameObject:
@@ -332,7 +341,7 @@ class Game:
         Generator for returning all the gameObjects in the gameObjects dictionary
         '''
 
-        for ID in self.gameObjects:
+        for ID in list(self.gameObjects):
             yield self.gameObjects[ID]
 
 

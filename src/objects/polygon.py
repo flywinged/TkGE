@@ -4,15 +4,18 @@ from tkinter import Canvas
 from tkinter import CENTER
 
 # Python imports
-from typing import Tuple
+from typing import Tuple, List
 
 # Package imports
-from ..base.collider import OvalCollider
+from ..base.collider import PolygonCollider
 from ..base.gameObject import GameObject
 
 from ..common import convertRGBToHex
 
-class Oval(GameObject):
+from ..base.event import TGEEvent, EVENT_TYPE
+from ..base.gameState import GameState
+
+class Polygon(GameObject):
     '''
     Oval object class definition.
 
@@ -32,38 +35,30 @@ class Oval(GameObject):
     def __init__(
             self,
             canvas: Canvas,
-            position: Tuple[float],
-            radius: Tuple[float],
+            points: List[Tuple[float]],
             fillColor: Tuple[float] = (1.0, 1.0, 1.0),
-            anchor: str = CENTER,
             **kwargs
             ):
+        
+        polygonCollider = PolygonCollider(points)
+        GameObject.__init__(self, canvas, collider=polygonCollider, **kwargs)
 
-        # Create the oval collider for the object. This collider is then passed in to the parent initializer
-        GameObject.__init__(self, canvas, **kwargs)
+        self.fillColor: Tuple[float] = fillColor
 
-        # Account for if only a single parameter was passed to oval. In this case, a circle is created.
-        if type(radius) == float:
-            radius = (self.initialScreenHeight / self.initialScreenWidth * radius, radius)
-        self.collider = OvalCollider(position[0], position[1], radius, anchor=anchor)
-
-        # Base fill color for the oval
-        self.fillColor: Tuple[float, float, float] = fillColor
-
-        self.ovalID: int = self.canvas.create_oval(
+        self.polygonID: int = self.canvas.create_polygon(
             *self.collider.getCoords(self.initialScreenWidth, self.initialScreenHeight),
             fill = convertRGBToHex(self.fillColor))
-
+    
     def _resize(self, newWidth: int, newHeight: int):
         '''
-        Resize the circle
+        Resize the button
         '''
 
-        self.canvas.scale(self.ovalID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
+        self.canvas.scale(self.polygonID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
     def _delete(self):
         '''
-        Delete the oval from the canvas
+        Delete the rect from the canvas
         '''
 
-        self.canvas.delete(self.ovalID)
+        self.canvas.delete(self.polygonID)

@@ -3,6 +3,7 @@
 from .collider import Collider
 from .collider import BoxCollider
 from .collider import OvalCollider
+from .collider import PolygonCollider
 
 # Font imports
 from .fonts import FONTS

@@ -53,6 +53,18 @@ class GameObject:
 
     def __hash__(self):
         return self.ID
+    
+    def _delete(self):
+        '''
+        Virtual function to overwrite.
+        '''
+    
+    def delete(self):
+        '''
+        Remove all tkinter objects from the canvas
+        '''
+
+        self._delete()
 
 
     ############

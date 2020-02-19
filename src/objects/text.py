@@ -94,3 +94,10 @@ class Text(GameObject):
         
         # To resize the actual text, we have to actually change the font.
         self.canvas.itemconfig(self.textID, font = self.font[textSize])
+
+    def _delete(self):
+        '''
+        Remove the text from the canvas
+        '''
+
+        self.canvas.delete(self.textID)

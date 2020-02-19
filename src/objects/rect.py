@@ -32,10 +32,10 @@ class Rect(GameObject):
     def __init__(
             self,
             canvas: Canvas,
-            position: Tuple[float, float],
+            position: Tuple[float],
             width: float,
             height: float,
-            fillColor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+            fillColor: Tuple[float] = (1.0, 1.0, 1.0),
             anchor: str = CENTER,
             **kwargs
             ):
@@ -59,4 +59,9 @@ class Rect(GameObject):
 
         self.canvas.scale(self.rectID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
-    
+    def _delete(self):
+        '''
+        Delete the rect from the canvas
+        '''
+
+        self.canvas.delete(self.rectID)
