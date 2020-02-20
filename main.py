@@ -1,7 +1,9 @@
-from src import Game
-from src import GameState
+# from src import Game
+# from src import GameState
 
-gs = GameState()
-g = Game(gs)
+# gs = GameState()
+# g = Game(gs)
 
-g.play()
+# g.play()
+
+from src.math import HexLocation
