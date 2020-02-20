@@ -16,8 +16,8 @@ class DIRECTIONS():
     # Each element of the map looks like this
         #   ( ( QRSIndex1, QRSVector1, PositiveDirection1 ) , ( QRSIndex2, QRSVector2, PositiveDirection2 ) )
     MAX_MAP = {
-        0 : ((1, R, 1), (2, S, -1)),
-        1 : ((0, Q, 1), (2, S, 1)),
+        0 : ((1, R,  1), (2, S, -1)),
+        1 : ((0, Q,  1), (2, S,  1)),
         2 : ((0, Q, -1), (1, R, -1))
     }
 
@@ -26,11 +26,6 @@ class HexLocation():
     Class for storing hexgrid locations
     '''
 
-    def __init__(self):
-
-        self.qrs: List[int] = [0, 0, 0]
-        self.xyz: List[int] = [0, 0, 0]
-    
     @staticmethod
     def createFromXY(x: int, y: int) -> "HexLocation":
         '''
@@ -49,7 +44,46 @@ class HexLocation():
         hexLocation.setQRS()
 
         return hexLocation
+    
+    @staticmethod
+    def createFromQRS(q: int, r: int, s: int) -> "HexLocation":
+        '''
+        Create a hex location from a given q, r, and s value. 
+        These values are restricted such that at least one == 0
+        '''
 
+        # Create new HexLocation
+        hexLocation = HexLocation()
+
+        # Just copy over the qrs values
+        hexLocation.qrs[0] = q
+        hexLocation.qrs[1] = r
+        hexLocation.qrs[2] = s
+
+        # Set the xyz values from the qrs values
+        hexLocation.setXYZ()
+
+        return hexLocation
+
+    def __init__(self):
+
+        self.qrs: List[int] = [0, 0, 0]
+        self.xyz: List[int] = [0, 0, 0]
+
+    def __repr__(self):
+        '''
+        Create the representation of this object
+        '''
+
+        locationString = ""
+
+        # First show the qrs values
+        locationString += f"QRS ({self.qrs[0]}, {self.qrs[1]}, {self.qrs[2]}) | "
+
+        # Then show the xyz values
+        locationString += f"XYZ ({self.xyz[0]}, {self.xyz[1]}, {self.xyz[2]})"
+
+        return locationString
 
     def setQRS(self) -> None:
         '''
@@ -60,8 +94,8 @@ class HexLocation():
         # This will determine which two vectors from Q, R, and S are used.
         maxValue, maxIndex = 0, 0
         for index in range(3):
-            if abs(self.xyz[index]) > maxIndex:
-                maxValue = abs(self.xyz[index])
+            if abs(self.xyz[index]) > abs(maxValue):
+                maxValue = self.xyz[index]
                 maxIndex = index
         
         # Once the maximum index and value has been found, we need to determine which two vectors from Q, R, and S will be used for the decomposition
@@ -78,12 +112,92 @@ class HexLocation():
         vector2 = vectorInfo[1][1]
 
         # And extract their default signs
-        vector1Sign = vectorInfo[0][2]
-        vector2Sign = vectorInfo[1][2]
+        maxSign = sign(maxValue)
+        vector1Sign = vectorInfo[0][2] * maxSign
+        vector2Sign = vectorInfo[1][2] * maxSign
         
         # Adjust each vector according to whether or not the max value was positive or negative
-        maxSign = sign(maxValue)
-        vector1 = (vector1[0] * vector1Sign * maxSign, vector1[1] * vector1Sign * maxSign, vector1[2] * vector1Sign * maxSign)
-        vector2 = (vector2[0] * vector2Sign * maxSign, vector2[1] * vector2Sign * maxSign, vector2[2] * vector2Sign * maxSign)
+        
+        vector1 = (vector1[0] * vector1Sign, vector1[1] * vector1Sign, vector1[2] * vector1Sign)
+        vector2 = (vector2[0] * vector2Sign, vector2[1] * vector2Sign, vector2[2] * vector2Sign)
 
-h = HexLocation.createFromXY(2, 2)
+        # Determine how many of each of the vectors are needed.
+        vector1Count, vector2Count = 0, 0
+        for dimensionIndex in range(3):
+            if dimensionIndex != maxIndex:
+
+                # Determine which vector is the relevant vector
+                if vector1[dimensionIndex] != 0:
+                    vector1Count = abs(self.xyz[dimensionIndex])
+                    vector2Count = abs(maxValue) - vector1Count
+                    break
+
+                if vector2[dimensionIndex] != 0:
+                    vector2Count = abs(self.xyz[dimensionIndex])
+                    vector1Count = abs(maxValue) - vector2Count
+                    break
+
+        # Now assign the QRS values
+        self.qrs[vector1Index] = vector1Count * vector1Sign
+        self.qrs[vector2Index] = vector2Count * vector2Sign
+
+    def setXYZ(self) -> None:
+        '''
+        Assuming q, r, and s are already set appropriately, determine x, y, and z.
+        '''
+
+        self.xyz[0] = DIRECTIONS.Q[0] * self.qrs[0] + DIRECTIONS.R[0] * self.qrs[1] + DIRECTIONS.S[0] * self.qrs[2]
+        self.xyz[1] = DIRECTIONS.Q[1] * self.qrs[0] + DIRECTIONS.R[1] * self.qrs[1] + DIRECTIONS.S[1] * self.qrs[2]
+        self.xyz[2] = DIRECTIONS.Q[2] * self.qrs[0] + DIRECTIONS.R[2] * self.qrs[1] + DIRECTIONS.S[2] * self.qrs[2]
+    
+
+    ######################
+    # OPERATOR OVERLOADS #
+    ######################
+    def __add__(self, other: "HexLocation") -> "HexLocation":
+        '''
+        Add two locations together
+        '''
+
+        # Just add the x and y components together
+        newX = self.xyz[0] + other.xyz[0]
+        newY = self.xyz[1] + other.xyz[1]
+
+        return HexLocation.createFromXY(newX, newY)
+    
+    def __iadd__(self, other: "HexLocation") -> "HexLocation":
+        '''
+        In place add operator
+        '''
+
+        self.xyz[0] += other.xyz[0]
+        self.xyz[1] += other.xyz[1]
+        self.xyz[2] += other.xyz[2]
+
+        self.setQRS()
+
+        return self
+
+    def __sub__(self, other: "HexLocation") -> "HexLocation":
+        '''
+        Subtract two locations together
+        '''
+
+        # Just sub the x and y components together
+        newX = self.xyz[0] - other.xyz[0]
+        newY = self.xyz[1] - other.xyz[1]
+
+        return HexLocation.createFromXY(newX, newY)
+    
+    def __isub__(self, other: "HexLocation") -> "HexLocation":
+        '''
+        In place subtract operator
+        '''
+
+        self.xyz[0] -= other.xyz[0]
+        self.xyz[1] -= other.xyz[1]
+        self.xyz[2] -= other.xyz[2]
+
+        self.setQRS()
+
+        return self
