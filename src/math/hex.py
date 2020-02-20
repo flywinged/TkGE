@@ -1,6 +1,8 @@
 
 # Python imports
+from typing import Dict
 from typing import List
+from typing import Set
 
 # Package imports
 from .sign import sign
@@ -20,6 +22,7 @@ class DIRECTIONS():
         1 : ((0, Q,  1), (2, S,  1)),
         2 : ((0, Q, -1), (1, R, -1))
     }
+
 
 class HexLocation():
     '''
@@ -150,6 +153,13 @@ class HexLocation():
         self.xyz[1] = DIRECTIONS.Q[1] * self.qrs[0] + DIRECTIONS.R[1] * self.qrs[1] + DIRECTIONS.S[1] * self.qrs[2]
         self.xyz[2] = DIRECTIONS.Q[2] * self.qrs[0] + DIRECTIONS.R[2] * self.qrs[1] + DIRECTIONS.S[2] * self.qrs[2]
     
+    def mag(self) -> int:
+        '''
+        Returns the magnitude of the hexLocations
+        '''
+
+        return abs(self.qrs[0]) + abs(self.qrs[1]) + abs(self.qrs[2])
+    
 
     ######################
     # OPERATOR OVERLOADS #
@@ -201,3 +211,42 @@ class HexLocation():
         self.setQRS()
 
         return self
+    
+    def __eq__(self, other: "HexLocation") -> bool:
+        '''
+        Equality comparator
+        '''
+
+        return self.xyz[0] == other.xyz[0] and self.xyz[1] == other.xyz[1] and self.xyz[2] == other.xyz[2]
+
+    def __hash__(self):
+        '''
+        Basic hashing method
+        '''
+        return tuple.__hash__((self.xyz[0], self.xyz[1], self.xyz[2]))
+
+class HexGrid:
+    '''
+    Class for managing many hexLocations.
+
+    Parameters
+    ----------
+    radius - Number of hexes away from the the origin
+    '''
+
+    def __init__(self, radius: int):
+        
+        # Grid locations stored as a set for easy access
+        self.grid: Set[HexLocation] = set()
+
+        # Create all the hex locations for the grid
+        for x in range(-radius, radius + 1):
+            for y in range(-radius, radius + 1):
+                hexLocation = HexLocation.createFromXY(x, y)
+                if abs(hexLocation.qrs[0]) + abs(hexLocation.qrs[1]) + abs(hexLocation.qrs[2]) <= radius:
+                    self.grid.add(hexLocation)
+                
+        
+        print(self.grid)
+        print(len(self.grid))
+        

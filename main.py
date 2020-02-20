@@ -6,4 +6,6 @@
 
 # g.play()
 
-from src.math import HexLocation
+from src.math import HexGrid
+
+h = HexGrid(13)
