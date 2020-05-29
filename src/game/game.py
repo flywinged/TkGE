@@ -131,6 +131,7 @@ class Game:
             
             # Resize everything in the self.canvas
             self.canvas.configure(width = desiredWidth, height = desiredHeight)
+            self.backupCanvas.configure(width = desiredWidth, height = desiredHeight)
 
             # Call the resize function on each child gameObject
             for gameObject in self.getAllGameObjects():
@@ -497,11 +498,21 @@ class UpdateThread(Thread):
 
         # Whether or not the thread has succesfully finished
         self.complete: bool = False
+
+        self.toggle = True
     
     def updateCall(self):
         '''
         Wrapped update call for canvas.after to call
         '''
+
+        self.toggle = not self.toggle
+        if self.toggle:
+            self.game.backupCanvas.place_forget()
+            self.game.canvas.place(in_=self.game.padFrame)
+        else:
+            self.game.canvas.place_forget()
+            self.game.backupCanvas.place(in_=self.game.padFrame)
 
         # Update the time for the game state before doing anything else
         self.game.gameState.updateTime()
