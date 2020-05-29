@@ -21,7 +21,6 @@ from ..base import TGEEvent
 from ..base import EVENT_TYPE
 from ..base import BUTTONS
 from ..base import EVENT_HANDLER
-from ..base import InputState
 from ..base import GameState
 
 from ..common import getTime
@@ -67,11 +66,17 @@ class Game:
         # Create the updateThread object. Manage time-based updates
         self.updateThread: UpdateThread = UpdateThread(self)
 
+        # Create the drawing thread
+        self.drawingThread: DrawingThread = DrawingThread(self)
+
         # Create the tk root and initialize the canvas and padFrame
         self.root = Tk()
         self.padFrame = Frame(borderwidth = 0, background = "#111", width = self.width, height = self.height)
         self.padFrame.grid(row = 0, column = 0, sticky="nsew")
+
+        # Require two canvases for double buffering
         self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
+        self.backupCanvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#555')
 
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
@@ -277,9 +282,10 @@ class Game:
         # Tell both the active threads to start shutting down
         self.eventThread.isActive = False
         self.updateThread.isActive = False
+        self.drawingThread.isActive = False
     
         # As long as the threads are still active, dont destroy the root
-        if not (self.eventThread.complete and self.updateThread.complete):
+        if not (self.eventThread.complete and self.updateThread.complete and self.drawingThread.complete):
             self.root.after(10, self.programCloseEvent)
         else:
             self.root.destroy()
@@ -336,7 +342,7 @@ class Game:
     # EVENT FUNCTIONS #
     ###################
 
-    def _handleEvent(self, event: TGEEvent):
+    def _handleEvent(self, event: TGEEvent): # pylint: disable=unused-argument
         '''
         Virtual function to overwrite.
         '''
@@ -355,6 +361,7 @@ class Game:
         # Start all the game threads
         self.eventThread.start()
         self.updateThread.start()
+        self.drawingThread.start()
         
         # Begin the tkinter loop
         self.root.mainloop()
@@ -465,6 +472,7 @@ class EventThread(Thread):
         self.complete = True
         print("Closed Event Thread")
 
+
 #################
 # UPDATE THREAD #
 #################
@@ -490,28 +498,78 @@ class UpdateThread(Thread):
         # Whether or not the thread has succesfully finished
         self.complete: bool = False
     
-    def run(self):
+    def updateCall(self):
+        '''
+        Wrapped update call for canvas.after to call
+        '''
 
-        while self.isActive:
+        # Update the time for the game state before doing anything else
+        self.game.gameState.updateTime()
 
-            # Update the time for the game state before doing anything else
-            self.game.gameState.updateTime()
+        # First call games before update call
+        self.game.updateBefore()
 
-            # First call games before update call
-            self.game.updateBefore()
+        # Now update each of the gameObjects
+        for gameObject in self.game.getAllGameObjects():
+            gameObject.update(self.game.gameState)
 
-            # Now update each of the gameObjects
-            for gameObject in self.game.getAllGameObjects():
-                gameObject.update(self.game.gameState)
-
-            # Now call the update after
-            self.game.updateAfter()
-
-            # Now wait for the appropriate amount of time specified by self.game.updateDelay
-            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
-            time.sleep(.001)
-            while self.isActive and (getTime() - self.game.gameState.now < (self.game.updateDelay / 1000)):
-                time.sleep(.001)
+        # Now call the update after
+        self.game.updateAfter()
         
+        # Now wait for the appropriate amount of time specified by self.game.updateDelay
+        # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
+        timeLeft = int(round((self.game.updateDelay) - (getTime() - self.game.gameState.now)))
+        self.game.canvas.after(timeLeft, self.updateCall)
+
+    
+    def run(self):
+        '''
+
+        '''
+
+        # Start tkinter update calls
+        self.updateCall()
+
+        # Not necessary, leaving it in for debugging purposes
+        while self.isActive:
+            time.sleep(0.005)
+        
+        # Close the thread when the game is no longer active
         self.complete = True
         print("Closed Update Thread")
+
+##################
+# DRAWING THREAD #
+##################
+
+class DrawingThread(Thread):
+    '''
+    Thread to handle all the time-based game updates.
+
+    Parameters
+    ----------
+    game: Game instance. The thread needs a reference in order to access the gameObjects
+    '''
+
+    def __init__(self, game: Game):
+        Thread.__init__(self)
+
+        # Assign the game reference
+        self.game: Game = game
+
+        # Control for killing the thread from elsewhere
+        self.isActive: bool = True
+
+        # Whether or not the thread has succesfully finished
+        self.complete: bool = False
+    
+    def run(self):
+        '''
+
+        '''
+
+        while self.isActive:
+            time.sleep(0.001)
+        
+        self.complete: bool = True
+        print("Closed Drawing Thread")

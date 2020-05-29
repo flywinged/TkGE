@@ -87,7 +87,7 @@ class BoxCollider(Collider):
 
 class OvalCollider(Collider):
     '''
-    Collider logic for a basic box object.
+    Collider logic for a basic oval object.
     '''
 
     def __init__(self, x: float, y: float, r: Tuple[float, float], anchor: str = CENTER):
@@ -101,7 +101,7 @@ class OvalCollider(Collider):
     
     def _isPointInside(self, point: Tuple[float]) -> bool:
         '''
-        If the point is within (or on) the box described by self.x, y, w, and h, return true
+        If the point is within (or on) the oval described by self.x, y, w, and h, return true
         '''
 
         normalizedDistance = (((point[0] - self.x) * self.r[1])**2 + ((point[1] - self.y) * self.r[0])**2)

@@ -91,7 +91,7 @@ class GameObject:
     ##################
     # EVENT HANDLING #
     ##################
-    def _handleEvent(self, event: TGEEvent, gameState: GameState):
+    def _handleEvent(self, event: TGEEvent, gameState: GameState): # pylint: disable=unused-argument
         '''
         Virtual function to overwrite
         '''

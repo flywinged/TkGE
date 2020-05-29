@@ -12,7 +12,6 @@ class Ball(Oval):
     '''
 
     def __init__(self, canvas: Canvas):
-
         Oval.__init__(self, canvas, (.5, .5), .01, (.6, .6, .3), anchor=CENTER)
     
     def update(self, gameState: PongState):
@@ -52,8 +51,10 @@ class Ball(Oval):
                 -abs(gameState.ballVelocity[0]),
                 random.random() - .5
             )
+        
 
         self.collider.x = gameState.ballLocation[0]
         self.collider.y = gameState.ballLocation[1]
         
-        self.canvas.coords(self.ovalID, self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight))
+        newCoords = self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight)
+        self.canvas.coords(self.ovalID, newCoords)
