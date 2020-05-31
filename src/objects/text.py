@@ -38,7 +38,6 @@ class Text(GameObject):
 
     def __init__(
                 self,
-                canvas: Canvas,
                 position: Tuple[int],
                 text: str,
                 font: str = "Courier",
@@ -49,7 +48,7 @@ class Text(GameObject):
             ):
         
         # Initialize the gameobject
-        GameObject.__init__(self, canvas, **kwargs)
+        GameObject.__init__(self, **kwargs)
 
         # The text object needs to remeber its initial font size so it can be rezied appropriately
         self.initialFontSize: int = fontSize
@@ -59,45 +58,39 @@ class Text(GameObject):
         self.text: str = text
         self.font: Dict[int, Font] = fonts.FONTS[font]
         self.textColor: Tuple[float, float, float] = textColor
+        self.hexColor: str = convertRGBToHex(self.textColor)
 
         # Set up the collider for the text.
-        w = self.font[self.currentFontSize].measure(text) / self.initialScreenWidth
-        h = self.font[self.currentFontSize].metrics()["linespace"] / self.initialScreenHeight
-        self.collider = BoxCollider(position[0], position[1], w, h, anchor = anchor)
+        self.collider: BoxCollider = BoxCollider(position[0], position[1], 0, 0, anchor = anchor)
+    
+    def _setup(self):
+        self.collider.w = self.font[self.currentFontSize].measure(self.text) / self.screenWidth
+        self.collider.h = self.font[self.currentFontSize].metrics()["linespace"] / self.screenHeight
 
-        # Create the text on the canvas and retain the handle on the textID
-        self.textID: int = self.canvas.create_text(
-            self.collider.x * self.initialScreenWidth,
-            self.collider.y * self.initialScreenHeight,
+    def _draw(self, canvas: Canvas):
+
+        canvas.create_text(
+            self.collider.x * self.screenWidth,
+            self.collider.y * self.screenHeight,
             text = self.text,
-            fill = convertRGBToHex(textColor),
+            fill = self.hexColor,
             anchor = NW, # Anchor is always NW because the collider normalizes all points to be this way
             font = self.font[self.currentFontSize]
         )
-    
-    def _resize(self, newWidth: int, newHeight: int):
+
+
+    def _resize(self):
         '''
         Resize the text according to the new screen width and height.
         '''
 
-        # Rescale all the objects on the canvas using tkinter's builtin scale call
-        self.canvas.scale(self.textID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
-
         # May need to create different sized text as the size is adjusted. Do this here.
-        textSize = int(self.initialFontSize * newWidth / self.initialScreenWidth)
+        textSize = int(self.initialFontSize * self.screenWidth / self.initialScreenWidth)
 
         # Don't let the text be resized larger or smaller than the available text sizes.
         if textSize < fonts.SMALLEST_FONT_SIZE:
             textSize = fonts.SMALLEST_FONT_SIZE
         if textSize > fonts.LARGEST_FONT_SIZE:
             textSize = fonts.LARGEST_FONT_SIZE
-        
-        # To resize the actual text, we have to actually change the font.
-        self.canvas.itemconfig(self.textID, font = self.font[textSize])
 
-    def _delete(self):
-        '''
-        Remove the text from the canvas
-        '''
-
-        self.canvas.delete(self.textID)
+        self.currentFontSize = textSize

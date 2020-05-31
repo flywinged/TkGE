@@ -10,6 +10,7 @@ from tkinter.constants import *
 from threading import Thread
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import time
 
@@ -45,7 +46,7 @@ class Game:
     updateDelay - Time (in ms) between succesive update calls
     '''
 
-    def __init__(self, gameState: GameState, width = 1280, height = 720, updateDelay: float = 17):
+    def __init__(self, gameState: GameState, width = 1280, height = 720, updateDelay: float = 1 / 60, drawDelay: float = 1 / 60):
 
         # Set the gameState
         self.gameState: GameState = gameState
@@ -59,6 +60,7 @@ class Game:
 
         # How long (ms) between state updates.
         self.updateDelay: float = updateDelay
+        self.drawDelay: float = drawDelay
 
         # Create the event thread object. Manage all user inputs
         self.eventThread: EventThread = EventThread(self)
@@ -74,9 +76,8 @@ class Game:
         self.padFrame = Frame(borderwidth = 0, background = "#111", width = self.width, height = self.height)
         self.padFrame.grid(row = 0, column = 0, sticky="nsew")
 
-        # Require two canvases for double buffering
-        self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
-        self.backupCanvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#555')
+        # Create the double buffered canvas
+        self.DBCanvas: DoubleBufferedCanvas = DoubleBufferedCanvas(self)
 
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
@@ -98,50 +99,10 @@ class Game:
         initializeFonts()
 
         # Lock the game's aspect ratio to whatever the current width and height are
-        self.setAspectRatio()
+        self.DBCanvas.setAspectRatio()
 
         # Bind all the event callbacks
         self.bindCallbacks()
-
-
-    def setAspectRatio(self):
-        '''
-        Function which forces the content frame to maintain a specified aspect ratio.
-        It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
-        '''
-        
-        def enforceAspectRatio(event: Event):
-            '''
-            Enforce function to be bound to tkinter.bind
-            '''
-
-            # start by using the width as the controlling dimension
-            desiredWidth = event.width
-            desiredHeight = int(event.width / self.aspectRatio)
-
-            # if the window is too tall to fit, use the height as
-            # the controlling dimension
-            if desiredHeight > event.height:
-                desiredHeight = event.height
-                desiredWidth = int(event.height * self.aspectRatio)
-
-            # place the window, giving it an explicit size
-            self.canvas.place(in_=self.padFrame, x=(event.width - desiredWidth)//2, y=(event.height - desiredHeight) // 2, 
-                width=desiredWidth, height=desiredHeight)
-            
-            # Resize everything in the self.canvas
-            self.canvas.configure(width = desiredWidth, height = desiredHeight)
-            self.backupCanvas.configure(width = desiredWidth, height = desiredHeight)
-
-            # Call the resize function on each child gameObject
-            for gameObject in self.getAllGameObjects():
-                gameObject.resize(desiredWidth, desiredHeight)
-
-        self.padFrame.bind("<Configure>", enforceAspectRatio)
-
-        # TODO: Figure out what all this row and column configure business does.
-        self.root.rowconfigure(0, weight = 1)
-        self.root.columnconfigure(0, weight = 1)
 
 
     #############
@@ -181,8 +142,8 @@ class Game:
         else:
             motionEvent.type = EVENT_TYPE.MOUSE_DRAG
         
-        motionEvent.mouseX = event.x / int(self.canvas.cget("width"))
-        motionEvent.mouseY = event.y / int(self.canvas.cget("height"))
+        motionEvent.mouseX = event.x / int(self.width)
+        motionEvent.mouseY = event.y / int(self.height)
 
         self.eventThread.eventQueue.append(motionEvent)
 
@@ -498,52 +459,35 @@ class UpdateThread(Thread):
 
         # Whether or not the thread has succesfully finished
         self.complete: bool = False
-
-        self.toggle = True
-    
-    def updateCall(self):
-        '''
-        Wrapped update call for canvas.after to call
-        '''
-
-        self.toggle = not self.toggle
-        if self.toggle:
-            self.game.backupCanvas.place_forget()
-            self.game.canvas.place(in_=self.game.padFrame)
-        else:
-            self.game.canvas.place_forget()
-            self.game.backupCanvas.place(in_=self.game.padFrame)
-
-        # Update the time for the game state before doing anything else
-        self.game.gameState.updateTime()
-
-        # First call games before update call
-        self.game.updateBefore()
-
-        # Now update each of the gameObjects
-        for gameObject in self.game.getAllGameObjects():
-            gameObject.update(self.game.gameState)
-
-        # Now call the update after
-        self.game.updateAfter()
-        
-        # Now wait for the appropriate amount of time specified by self.game.updateDelay
-        # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
-        timeLeft = int(round((self.game.updateDelay) - (getTime() - self.game.gameState.now)))
-        self.game.canvas.after(timeLeft, self.updateCall)
-
     
     def run(self):
         '''
 
         '''
 
-        # Start tkinter update calls
-        self.updateCall()
-
         # Not necessary, leaving it in for debugging purposes
         while self.isActive:
-            time.sleep(0.005)
+            
+            # Update the time for the game state before doing anything else
+            self.game.gameState.updateTime()
+
+            # First call games before update call
+            self.game.updateBefore()
+
+            # Now update each of the gameObjects
+            for gameObject in self.game.getAllGameObjects():
+                gameObject.update(self.game.gameState)
+
+            # Now call the update after
+            self.game.updateAfter()
+            
+            # Now wait for the appropriate amount of time specified by self.game.updateDelay
+            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
+            timeLeft = self.game.updateDelay - (getTime() - self.game.gameState.now)
+            if timeLeft < 0: timeLeft = 0
+           
+            # Sleep for the appropriate amount of time
+            time.sleep(timeLeft)
         
         # Close the thread when the game is no longer active
         self.complete = True
@@ -573,14 +517,123 @@ class DrawingThread(Thread):
 
         # Whether or not the thread has succesfully finished
         self.complete: bool = False
-    
+
     def run(self):
         '''
 
         '''
 
         while self.isActive:
-            time.sleep(0.001)
+
+            # Record when this loop started
+            startTime = getTime()
+            
+            # Now update each of the gameObjects
+            for gameObject in self.game.getAllGameObjects():
+                gameObject.draw(self.game.DBCanvas.bufferCanvas, self.game.width, self.game.height)
+            
+            # Once they are all drawn, flip the screens
+            self.game.DBCanvas.flip()
+            
+            # Now wait for the appropriate amount of time specified by self.game.updateDelay
+            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
+            finishTime = getTime()
+            timeLeft = self.game.drawDelay - (finishTime - startTime)
+            if timeLeft < 0: timeLeft = 0
+            
+            # Wait the appropriate amount of time
+            time.sleep(timeLeft)
         
         self.complete: bool = True
         print("Closed Drawing Thread")
+
+
+##################################
+# DOUBLE BUFFERED TKINTER CANVAS #
+##################################
+class DoubleBufferedCanvas:
+    '''
+    A Double buffered canvas contains two tkinter canvas objects and displays one while the other one is being drawn.
+    Then it flips.
+    '''
+
+    def __init__(self, game: Game):
+
+        self.game: Game = game
+
+        # Create the necessary canvases
+        canvas1 = Canvas(self.game.root, width = self.game.width, height = self.game.height, highlightthickness = 0, background = '#000')
+        canvas2 = Canvas(self.game.root, width = self.game.width, height = self.game.height, highlightthickness = 0, background = '#000')
+        self.canvases: List[Canvas] = [canvas1, canvas2]
+
+        # Variables for management of the two canvases
+        self.activeCanvasIndex: int = 0
+        self.bufferCanvasIndex: int = 1
+        self.activeCanvas: Canvas = self.canvases[self.activeCanvasIndex]
+        self.bufferCanvas: Canvas = self.canvases[self.bufferCanvasIndex]
+
+        # For placing in the center
+        self.offset: Tuple[int] = (0, 0)
+    
+    def setAspectRatio(self):
+        '''
+        Function which forces the content frame to maintain a specified aspect ratio.
+        It does this by placing the content frame inside of a padded frame, and resizes the content frame accordingly.
+        '''
+        
+        def enforceAspectRatio(event: Event):
+            '''
+            Enforce function to be bound to tkinter.bind
+            '''
+
+            # start by using the width as the controlling dimension
+            desiredWidth = event.width
+            desiredHeight = int(event.width / self.game.aspectRatio)
+
+            # if the window is too tall to fit, use the height as
+            # the controlling dimension
+            if desiredHeight > event.height:
+                desiredHeight = event.height
+                desiredWidth = int(event.height * self.game.aspectRatio)
+
+            # place the window, giving it an explicit size
+            self.offset = ((event.width - desiredWidth)//2, (event.height - desiredHeight) // 2)
+            self.canvases[self.activeCanvasIndex].place(in_=self.game.padFrame, x=self.offset[0], y = self.offset[1], 
+                width=desiredWidth, height=desiredHeight)
+            
+            # Resize everything in the self.canvases[self.activeCanvasIndex]
+            self.canvases[self.activeCanvasIndex].configure(width = desiredWidth, height = desiredHeight)
+            self.canvases[self.bufferCanvasIndex].configure(width = desiredWidth, height = desiredHeight)
+
+            # Call the resize function on each child gameObject
+            for gameObject in self.game.getAllGameObjects():
+                gameObject.resize(desiredWidth, desiredHeight)
+            
+            # Set the new width and height of the game
+            self.game.width = desiredWidth
+            self.game.height = desiredHeight
+
+        self.game.padFrame.bind("<Configure>", enforceAspectRatio)
+
+        # TODO: Figure out what all this row and column configure business does.
+        self.game.root.rowconfigure(0, weight = 1)
+        self.game.root.columnconfigure(0, weight = 1)
+    
+    def flip(self):
+        '''
+        Flip will change the active canvas and repack the correct canvas
+        '''
+
+        # Change which canvas is immediately placed
+        self.activeCanvas.place_forget()
+        self.bufferCanvas.place(in_=self.game.padFrame, x=self.offset[0], y = self.offset[1], 
+                width=self.game.width, height=self.game.height)       
+
+        # Then update the indexes
+        self.activeCanvasIndex = (self.activeCanvasIndex + 1) % 2
+        self.bufferCanvasIndex = (self.bufferCanvasIndex + 1) % 2
+        self.activeCanvas = self.canvases[self.activeCanvasIndex]
+        self.bufferCanvas = self.canvases[self.bufferCanvasIndex]
+
+        # Then clear everything on the new inactive canvas
+        self.bufferCanvas.delete(ALL)

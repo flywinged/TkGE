@@ -5,6 +5,7 @@ from tkinter import CENTER
 
 # Python imports
 from typing import Tuple
+from typing import List
 
 # Package imports
 from ..base.collider import OvalCollider
@@ -31,7 +32,6 @@ class Oval(GameObject):
 
     def __init__(
             self,
-            canvas: Canvas,
             position: Tuple[float],
             radius: Tuple[float],
             fillColor: Tuple[float] = (1.0, 1.0, 1.0),
@@ -40,30 +40,31 @@ class Oval(GameObject):
             ):
 
         # Create the oval collider for the object. This collider is then passed in to the parent initializer
-        GameObject.__init__(self, canvas, **kwargs)
+        GameObject.__init__(self, **kwargs)
 
         # Account for if only a single parameter was passed to oval. In this case, a circle is created.
-        if type(radius) == float:
-            radius = (self.initialScreenHeight / self.initialScreenWidth * radius, radius)
-        self.collider = OvalCollider(position[0], position[1], radius, anchor=anchor)
+        self.radius: Tuple[float] = radius
+        self.collider = OvalCollider(position[0], position[1], (0, 0), anchor=anchor)
 
         # Base fill color for the oval
         self.fillColor: Tuple[float, float, float] = fillColor
+        self.hexColor: Tuple[float] = convertRGBToHex(self.fillColor)
 
-        self.ovalID: int = self.canvas.create_oval(
-            *self.collider.getCoords(self.initialScreenWidth, self.initialScreenHeight),
-            fill = convertRGBToHex(self.fillColor))
+        # Coord values
+        self.coords: List[float] = []
 
-    def _resize(self, newWidth: int, newHeight: int):
-        '''
-        Resize the circle
-        '''
+    def _draw(self, canvas: Canvas):
 
-        self.canvas.scale(self.ovalID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
+        canvas.create_oval(
+            *self.coords,
+            fill = self.hexColor)
 
-    def _delete(self):
-        '''
-        Delete the oval from the canvas
-        '''
+    def _setup(self):
+        if type(self.radius) == float:
+            self.radius = (self.radius * self.initialScreenHeight / self.initialScreenWidth, self.radius)
+        self.collider.r = self.radius
 
-        self.canvas.delete(self.ovalID)
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+
+    def _resize(self):
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)

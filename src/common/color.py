@@ -17,11 +17,19 @@ def convertRGBToHex(rgb: Tuple[float, float, float]) -> str:
     # Construct the hex code color
     hexCode = "#"
 
-    # Remove the /x in front of each color
-    hexCode += str(hex(r))[2:]
-    hexCode += str(hex(g))[2:]
-    hexCode += str(hex(b))[2:]
+    # Get the hex for each color
+    rHex = str(hex(r))[2:]
+    gHex = str(hex(g))[2:]
+    bHex = str(hex(b))[2:]
 
+    # Add zeros if necessary
+    if len(rHex) == 1: rHex = "0" + rHex
+    if len(gHex) == 1: gHex = "0" + gHex
+    if len(bHex) == 1: bHex = "0" + bHex
+
+    # Remove the /x in front of each color
+    hexCode += rHex + gHex + bHex
+    
     return hexCode
 
 def convertHLSToHex(hls: Tuple[float, float, float]) -> str:

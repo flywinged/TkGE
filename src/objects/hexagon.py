@@ -1,18 +1,12 @@
 
 # Tkinter imports
 from tkinter import Canvas
-from tkinter import CENTER
 
 # Python imports
-from typing import List
 from typing import Tuple
 import math
 
 # Package imports
-from ..base.gameObject import GameObject
-
-from ..common import convertRGBToHex
-
 from .polygon import Polygon
 
 class Hexagon(Polygon):
@@ -36,7 +30,6 @@ class Hexagon(Polygon):
 
     def __init__(
             self,
-            canvas: Canvas,
             position: Tuple[float],
             radius: float,
             rotation: float = 0.0,
@@ -56,18 +49,4 @@ class Hexagon(Polygon):
                 position[1] + radius * math.sin(angle)
             ))
 
-        Polygon.__init__(self, canvas, points, **kwargs)
-    
-    def _resize(self, newWidth: int, newHeight: int):
-        '''
-        Resize the button
-        '''
-
-        self.canvas.scale(self.polygonID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
-
-    def _delete(self):
-        '''
-        Delete the rect from the canvas
-        '''
-
-        self.canvas.delete(self.polygonID)
+        Polygon.__init__(self, points, **kwargs)

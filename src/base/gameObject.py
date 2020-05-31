@@ -26,22 +26,23 @@ class GameObject:
 
     def __init__(
         self,
-        canvas: Canvas,
+        dimensions: Tuple[int] = (0, 0),
         collider: Collider = None
         ):
         
-        # The only required argument to create a gameObject is the canvas it will be drawn on.
-        self.canvas: Canvas = canvas
+        # To remember the size of the screen
+        self.screenWidth: int = dimensions[0]
+        self.screenHeight: int = dimensions[1]
 
-        # All the rest of the arguments are optional
+        # Set for use elsewhere
+        self.initialScreenWidth: int = 0
+        self.initialScreenHeight: int = 0
+
+        # Set the collider if exists
         self.collider: Collider = collider
 
-        # To remember the size of the screen
-        self.initialScreenWidth: int = int(self.canvas.cget("width"))
-        self.initialScreenHeight: int = int(self.canvas.cget("height"))
-
-        self.currentScreenWidth: int = int(self.canvas.cget("width"))
-        self.currentScreenHeight: int = int(self.canvas.cget("height"))
+        # Whether or not the object has been setup
+        self.setup: bool = False
 
         # GameObject ID
         self.ID: int = GameObject.getNextID()
@@ -54,6 +55,8 @@ class GameObject:
     def __hash__(self):
         return self.ID
     
+
+    # TODO: Make this actually do something...
     def _delete(self):
         '''
         Virtual function to overwrite.
@@ -70,7 +73,7 @@ class GameObject:
     ############
     # RESIZING #
     ############
-    def _resize(self, newWidth: int, newHeight: int):
+    def _resize(self):
         '''
         Virtual function to overwrite
         '''
@@ -80,12 +83,51 @@ class GameObject:
         Resize the object and it's collider
         '''
 
-        self.collider.resize(newWidth, newHeight)
-        self._resize(newWidth, newHeight)
+        if self.setup:
 
-        # Update the old width variables
-        self.currentScreenWidth = newWidth
-        self.currentScreenHeight = newHeight
+            # Update the old width variables
+            self.screenWidth = newWidth
+            self.screenHeight = newHeight
+
+            self.collider.resize(newWidth, newHeight)
+            self._resize()
+
+
+    ###########
+    # DRAWING #
+    ###########
+    def _draw(self, canvas: Canvas):
+        '''
+        Virtual function to overwrite
+        '''
+
+    def _setup(self):
+        '''
+        Virtual function to overwrite
+        '''
+
+    def draw(self, canvas: Canvas, width: int, height: int):
+        '''
+        Draw the object and it's collider
+        '''
+
+        if not self.setup:
+
+            # First, do initial setup
+            self.screenWidth = width
+            self.screenHeight = height
+
+            # Set the initial screen width and height
+            self.initialScreenWidth = width
+            self.initialScreenHeight = height
+
+            self._setup()
+            self.setup = True
+
+            # Call a resize
+            self.resize(width, height)
+
+        self._draw(canvas)
 
 
     ##################
@@ -103,7 +145,8 @@ class GameObject:
         Basic event handler filter
         '''
 
-        return self._handleEvent(event, gameState)
+        if self.setup:
+            return self._handleEvent(event, gameState)
 
 
     ##########
@@ -119,7 +162,8 @@ class GameObject:
         Basic update handler.
         '''
 
-        self._update(gameState)
+        if self.setup:
+            self._update(gameState)
 
     def isPointInside(self, point: Tuple[int]):
         '''

@@ -5,6 +5,7 @@ from tkinter import CENTER
 
 # Python imports
 from typing import Tuple
+from typing import List
 
 # Package imports
 from ..base import BoxCollider
@@ -21,7 +22,6 @@ class Button(GameObject):
 
     def __init__(
             self,
-            canvas: Canvas,
             position: Tuple[int],
             width: int,
             height: int,
@@ -29,37 +29,30 @@ class Button(GameObject):
             **kwargs
             ):
 
-        GameObject.__init__(self, canvas, **kwargs)
+        GameObject.__init__(self, **kwargs)
 
          # A Button uses the basic box collider. Build the appropriate box collider.
         self.collider = BoxCollider(position[0], position[1], width, height, anchor=anchor)
 
+        self.coords: List[float] = []
+
         self.hovered: bool = False
 
-        self.rectID: int = self.canvas.create_rectangle(
-            (self.collider.x) * self.initialScreenWidth,
-            (self.collider.y) * self.initialScreenHeight,
-            (self.collider.x + width) * self.initialScreenWidth,
-            (self.collider.y + height) * self.initialScreenHeight,
-            fill = "grey")
+    def _setup(self):
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+    
+    def _resize(self):
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
 
-    def move(self):
-        
-        self.canvas.move(self.rectID, 1, 1)
+    def _draw(self, canvas: Canvas):
 
-        self.collider.x += 1
-        self.collider.y += 1
+        canvas.create_rectangle(
+            *self.coords,
+            fill = "yellow" if self.hovered else "grey")
 
     def _handleEvent(self, event: TGEEvent, gameState: GameState):
         if event.type == EVENT_TYPE.MOUSE_MOTION:
             self.checkHover((event.mouseX, event.mouseY))
-    
-    def _resize(self, newWidth: int, newHeight: int):
-        '''
-        Resize the button
-        '''
-
-        self.canvas.scale(self.rectID, 0, 0, newWidth / self.currentScreenWidth, newHeight / self.currentScreenHeight)
 
     def checkHover(self, point: Tuple[int]):
         '''
@@ -68,14 +61,10 @@ class Button(GameObject):
 
         if self.isPointInside(point):
             if not self.hovered:
-
-                self.canvas.itemconfig(self.rectID, fill = "yellow")
                 self.hovered = True
 
         else:
 
             if self.hovered:
-
-                self.canvas.itemconfig(self.rectID, fill = "grey")
                 self.hovered = False
     
