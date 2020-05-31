@@ -11,11 +11,11 @@ class PlayerPaddle(Rect):
 
     '''
 
-    def __init__(self, canvas):
+    def __init__(self):
 
-        Rect.__init__(self, canvas, (.005, .5), .01, .2, (0.2, 0.8, 0.2), anchor=CENTER)
+        Rect.__init__(self, (.005, .5), .01, .2, (0.2, 0.8, 0.2), anchor=CENTER)
     
-    def handleEvent(self, event: TGEEvent, gameState: PongState):
+    def _handleEvent(self, event: TGEEvent, gameState: PongState):
         '''
 
         '''
@@ -28,7 +28,7 @@ class PlayerPaddle(Rect):
             if self.collider.y + self.collider.h > 1.0:
                 self.collider.y = 1.0 - self.collider.h
 
-            self.canvas.coords(self.rectID, self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight))
+            self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
         
         gameState.playerPaddleLocation = self.collider.y + self.collider.h / 2
 
@@ -37,9 +37,9 @@ class EnemyPaddle(Rect):
 
     '''
 
-    def __init__(self, canvas):
+    def __init__(self):
 
-        Rect.__init__(self, canvas, (.995, .5), .01, .2, (0.8, 0.2, 0.2), anchor=CENTER)
+        Rect.__init__(self, (.995, .5), .01, .2, (0.8, 0.2, 0.2), anchor=CENTER)
     
     def update(self, gameState: PongState):
         '''
@@ -56,4 +56,4 @@ class EnemyPaddle(Rect):
         self.collider.y = ballCenterY
         gameState.enemyPaddleLocation = ballCenterY + self.collider.h / 2
 
-        self.canvas.coords(self.rectID, self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight))
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)

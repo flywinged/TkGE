@@ -11,11 +11,11 @@ class Pong(Game):
 
     def __init__(self):
         state = PongState()
-        Game.__init__(self, state, updateDelay=17)
+        Game.__init__(self, state)
 
-        self.addGameObject(PlayerPaddle(self.canvas))
-        self.addGameObject(EnemyPaddle(self.canvas))
-        self.addGameObject(Ball(self.canvas))
+        self.addGameObject(PlayerPaddle())
+        self.addGameObject(EnemyPaddle())
+        self.addGameObject(Ball())
     
     def updateBefore(self):
         '''

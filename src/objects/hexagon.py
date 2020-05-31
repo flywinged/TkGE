@@ -1,7 +1,3 @@
-
-# Tkinter imports
-from tkinter import Canvas
-
 # Python imports
 from typing import Tuple
 import math
@@ -35,18 +31,26 @@ class Hexagon(Polygon):
             rotation: float = 0.0,
             **kwargs
             ):
-        
-        initialScreenWidth: int = int(canvas.cget("width"))
-        initialScreenHeight: int = int(canvas.cget("height"))
-        ratio = initialScreenHeight / initialScreenWidth
 
         # Create the point list
+        self.position: Tuple[float] = position
         points = []
         for i in range(6):
             angle = (i / 6) * math.tau + rotation
             points.append((
-                position[0] + radius * math.cos(angle) * ratio,
+                radius * math.cos(angle),
                 position[1] + radius * math.sin(angle)
             ))
 
         Polygon.__init__(self, points, **kwargs)
+    
+    def _setup(self):
+
+        ratio = self.screenHeight / self.screenWidth
+
+        Polygon._setup(self)
+
+        for i in range(len(self.collider.points)):
+            point = self.collider.points[i]
+            newPoint = (self.position[0] + point[0] * ratio, point[1])
+            self.collider.points[i] = newPoint

@@ -1,6 +1,6 @@
 from src import Oval
 
-from tkinter import Canvas, CENTER
+from tkinter import CENTER
 
 from .gameState import PongState
 
@@ -11,10 +11,10 @@ class Ball(Oval):
 
     '''
 
-    def __init__(self, canvas: Canvas):
-        Oval.__init__(self, canvas, (.5, .5), .01, (.6, .6, .3), anchor=CENTER)
-    
-    def update(self, gameState: PongState):
+    def __init__(self):
+        Oval.__init__(self, (.5, .5), .01, (.6, .6, .3), anchor=CENTER)
+
+    def _update(self, gameState: PongState):
         '''
 
         '''
@@ -56,5 +56,4 @@ class Ball(Oval):
         self.collider.x = gameState.ballLocation[0]
         self.collider.y = gameState.ballLocation[1]
         
-        newCoords = self.collider.getCoords(self.currentScreenWidth, self.currentScreenHeight)
-        self.canvas.coords(self.ovalID, newCoords)
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
