@@ -57,8 +57,7 @@ class Text(GameObject):
         # Set the values for text
         self.text: str = text
         self.font: Dict[int, Font] = fonts.FONTS[font]
-        self.textColor: Tuple[float, float, float] = textColor
-        self.hexColor: str = convertRGBToHex(self.textColor)
+        self.textColor: str = convertRGBToHex(textColor)
 
         # Set up the collider for the text.
         self.collider: BoxCollider = BoxCollider(position[0], position[1], 0, 0, anchor = anchor)
@@ -66,6 +65,7 @@ class Text(GameObject):
     def _setup(self):
         self.collider.w = self.font[self.currentFontSize].measure(self.text) / self.screenWidth
         self.collider.h = self.font[self.currentFontSize].metrics()["linespace"] / self.screenHeight
+        self.collider.adjustPoints()
 
     def _draw(self, canvas: Canvas):
 
@@ -73,7 +73,7 @@ class Text(GameObject):
             self.collider.x * self.screenWidth,
             self.collider.y * self.screenHeight,
             text = self.text,
-            fill = self.hexColor,
+            fill = self.textColor,
             anchor = NW, # Anchor is always NW because the collider normalizes all points to be this way
             font = self.font[self.currentFontSize]
         )

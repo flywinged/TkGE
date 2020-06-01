@@ -38,8 +38,7 @@ class Polygon(GameObject):
 
         self.coords: List[float] = []
 
-        self.fillColor: Tuple[float] = fillColor
-        self.hexColor: Tuple[float] = convertRGBToHex(fillColor)
+        self.fillColor: Tuple[float] = convertRGBToHex(fillColor)
     
     def _setup(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight) 
@@ -48,7 +47,7 @@ class Polygon(GameObject):
 
         canvas.create_polygon(
             *self.collider.getCoords(self.screenWidth, self.screenHeight),
-            fill = self.hexColor)
+            fill = self.fillColor)
 
     def _resize(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight) 

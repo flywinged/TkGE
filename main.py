@@ -1,13 +1,21 @@
 from src import Game
 from src import GameState
 
-from src import Rect, Text, Oval, Polygon, Button, Hexagon
+from src import Button
 
 gs = GameState()
 g = Game(gs)
 
-# g.play()
+button = Button(
+    (.5, .5),
+    .2, .05,
 
-from src.math import HexGrid
+    text="TEST"
+)
+g.addGameObject(button)
 
-h = HexGrid(13)
+g.play()
+
+# from src.math import HexGrid
+
+# h = HexGrid(13)

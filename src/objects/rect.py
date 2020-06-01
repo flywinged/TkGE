@@ -45,9 +45,6 @@ class Rect(GameObject):
          # A Button uses the basic box collider. Build the appropriate box collider.
         self.collider = BoxCollider(position[0], position[1], width, height, anchor=anchor)
 
-        # Fill color variable
-        self.fillColor: Tuple[float, float, float] = fillColor
-
         # Coords for drawing
         self.coords: List[float] = []
 

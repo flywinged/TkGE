@@ -4,6 +4,7 @@ from tkinter import Canvas
 
 # Python imports
 from typing import Tuple
+from typing import List
 
 # Package imports
 from .collider import Collider
@@ -47,6 +48,9 @@ class GameObject:
         # GameObject ID
         self.ID: int = GameObject.getNextID()
 
+        # List of all child gameObjects
+        self.children: List[GameObject] = []
+
     @classmethod
     def getNextID(cls):
         cls.currentID += 1
@@ -54,6 +58,15 @@ class GameObject:
 
     def __hash__(self):
         return self.ID
+    
+
+    # Add children gameObjects. If added, their functions will all be qutomatically called
+    def addChild(self, gameObject: "GameObject"):
+        '''
+        A Child gameobject will be handled automatically whenever a function is called.
+        '''
+
+        self.children.append(gameObject)
     
 
     # TODO: Make this actually do something...
@@ -66,6 +79,9 @@ class GameObject:
         '''
         Remove all tkinter objects from the canvas
         '''
+
+        for child in self.children:
+            child.delete()
 
         self._delete()
 
@@ -83,13 +99,15 @@ class GameObject:
         Resize the object and it's collider
         '''
 
+        for child in self.children:
+            child.resize(newWidth, newHeight)
+
         if self.setup:
 
             # Update the old width variables
             self.screenWidth = newWidth
             self.screenHeight = newHeight
 
-            self.collider.resize(newWidth, newHeight)
             self._resize()
 
 
@@ -129,6 +147,9 @@ class GameObject:
 
         self._draw(canvas)
 
+        for child in self.children:
+            child.draw(canvas, width, height)
+
 
     ##################
     # EVENT HANDLING #
@@ -144,6 +165,9 @@ class GameObject:
         '''
         Basic event handler filter
         '''
+
+        for child in self.children:
+            child.handleEvent(event, gameState)
 
         if self.setup:
             return self._handleEvent(event, gameState)
@@ -161,6 +185,9 @@ class GameObject:
         '''
         Basic update handler.
         '''
+
+        for child in self.children:
+            child.update(gameState)
 
         if self.setup:
             self._update(gameState)

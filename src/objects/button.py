@@ -1,21 +1,22 @@
 
 # Tkinter imports
-from tkinter import Canvas
 from tkinter import CENTER
 
 # Python imports
 from typing import Tuple
-from typing import List
 
 # Package imports
-from ..base import BoxCollider
-from ..base import GameObject
 from ..base import GameState
 
 from ..base import TGEEvent
 from ..base import EVENT_TYPE
 
-class Button(GameObject):
+from ..common import convertRGBToHex
+
+from .text import Text
+from .rect import Rect
+
+class Button(Rect):
     '''
 
     '''
@@ -26,15 +27,43 @@ class Button(GameObject):
             width: int,
             height: int,
             anchor: str = CENTER,
+            fillColor: Tuple[float] = (.5, .5, .5),
+            highlightColor: Tuple[float] = (.8, .8, .2),
+
+            # Text variables
+            text: str = "",
+            textSize: int = 12,
+            font: str = "Courier",
+            textColor: Tuple[float] = (1, 1, 1),
+            textHighlight: Tuple[float] = (1, 1, 1),
+
             **kwargs
             ):
 
-        GameObject.__init__(self, **kwargs)
+        Rect.__init__(
+            self,
+            position,
+            width, height,
+            fillColor=fillColor,
+            anchor=anchor
+        )
 
-         # A Button uses the basic box collider. Build the appropriate box collider.
-        self.collider = BoxCollider(position[0], position[1], width, height, anchor=anchor)
+        # Convert the colors appropriately
+        self.defaultColor: str = convertRGBToHex(fillColor)
+        self.highlightColor: str = convertRGBToHex(highlightColor)
 
-        self.coords: List[float] = []
+        # Store the text Colors
+        self.textColor = convertRGBToHex(textColor)
+        self.textHighlight = convertRGBToHex(textHighlight)
+
+        self.text: Text = Text(
+            (self.collider.x + self.collider.w / 2, self.collider.y + self.collider.h / 2),
+            text = text,
+            fontSize=textSize,
+            textColor=textColor,
+            font=font
+        )
+        self.addChild(self.text)
 
         self.hovered: bool = False
 
@@ -43,12 +72,6 @@ class Button(GameObject):
     
     def _resize(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
-
-    def _draw(self, canvas: Canvas):
-
-        canvas.create_rectangle(
-            *self.coords,
-            fill = "yellow" if self.hovered else "grey")
 
     def _handleEvent(self, event: TGEEvent, gameState: GameState):
         if event.type == EVENT_TYPE.MOUSE_MOTION:
@@ -62,9 +85,13 @@ class Button(GameObject):
         if self.isPointInside(point):
             if not self.hovered:
                 self.hovered = True
+                self.text.textColor = self.textHighlight
+                self.fillColor = self.highlightColor
 
         else:
 
             if self.hovered:
                 self.hovered = False
+                self.text.textColor = self.textColor
+                self.fillColor = self.defaultColor
     

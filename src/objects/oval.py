@@ -47,8 +47,7 @@ class Oval(GameObject):
         self.collider = OvalCollider(position[0], position[1], (0, 0), anchor=anchor)
 
         # Base fill color for the oval
-        self.fillColor: Tuple[float, float, float] = fillColor
-        self.hexColor: Tuple[float] = convertRGBToHex(self.fillColor)
+        self.fillColor: Tuple[float] = convertRGBToHex(fillColor)
 
         # Coord values
         self.coords: List[float] = []
@@ -57,7 +56,7 @@ class Oval(GameObject):
 
         canvas.create_oval(
             *self.coords,
-            fill = self.hexColor)
+            fill = self.fillColor)
 
     def _setup(self):
         if type(self.radius) == float:

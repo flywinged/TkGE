@@ -28,18 +28,6 @@ class Collider:
 
         return self._isPointInside(point)
     
-    def _resize(self, newWidth: int, newHeight: int):
-        '''
-        Virtual function to overwrite
-        '''
-    
-    def resize(self, newWidth: int, newHeight: int):
-        '''
-        Virtual function to overwrite
-        '''
-
-        self._resize(newWidth, newHeight)
-    
     def _getCoords(self, screenWidth: int, screenHeight: int):
         '''
         Virtual functino to overwrite
@@ -51,6 +39,19 @@ class Collider:
         '''
 
         return self._getCoords(screenWidth, screenHeight)
+    
+    def _adjustPoints(self):
+        '''
+        Vitual Function to overwrite
+        '''
+
+    def adjustPoints(self):
+        '''
+        Readjust point values in case they have changed
+        '''
+
+        self._adjustPoints()
+
 
 class BoxCollider(Collider):
     '''
@@ -60,6 +61,8 @@ class BoxCollider(Collider):
     def __init__(self, x: float, y: float, w: float, h: float, anchor: str = CENTER):
         Collider.__init__(self)
 
+        self.anchor: str = anchor
+
         # Adjust the x, y positions using common function
         x, y = adjustTopLeftCorner((x, y), anchor, w, h)
 
@@ -67,6 +70,11 @@ class BoxCollider(Collider):
         self.y: float = y
         self.w: float = w
         self.h: float = h
+    
+    def _adjustPoints(self):
+
+        # Adjust the x, y positions using common function
+        self.x, self.y = adjustTopLeftCorner((self.x, self.y), self.anchor, self.w, self.h)
     
     def _isPointInside(self, point: Tuple[float]) -> bool:
         '''
