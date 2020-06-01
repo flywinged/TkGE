@@ -3,6 +3,7 @@ from .gameState import PongState
 
 from .paddle import PlayerPaddle, EnemyPaddle
 from .ball import Ball
+from .scoreBox import ScoreBox
 
 class Pong(Game):
     '''
@@ -16,6 +17,7 @@ class Pong(Game):
         self.addGameObject(PlayerPaddle())
         self.addGameObject(EnemyPaddle())
         self.addGameObject(Ball())
+        self.addGameObject(ScoreBox())
     
     def updateBefore(self):
         '''
