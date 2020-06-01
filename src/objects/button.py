@@ -4,6 +4,7 @@ from tkinter import CENTER
 
 # Python imports
 from typing import Tuple
+from types import FunctionType
 
 # Package imports
 from ..base import GameState
@@ -29,6 +30,8 @@ class Button(Rect):
             anchor: str = CENTER,
             fillColor: Tuple[float] = (.5, .5, .5),
             highlightColor: Tuple[float] = (.8, .8, .2),
+
+            callback: FunctionType = None,
 
             # Text variables
             text: str = "",
@@ -67,6 +70,9 @@ class Button(Rect):
 
         self.hovered: bool = False
 
+        # Callback for when the button is pressed
+        self.callback: FunctionType = callback
+
     def _setup(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
     
@@ -76,6 +82,9 @@ class Button(Rect):
     def _handleEvent(self, event: TGEEvent, gameState: GameState):
         if event.type == EVENT_TYPE.MOUSE_MOTION:
             self.checkHover((event.mouseX, event.mouseY))
+        
+        if event.type == EVENT_TYPE.MOUSE_CLICK and self.hovered and self.callback is not None:
+            self.callback()
 
     def checkHover(self, point: Tuple[int]):
         '''
