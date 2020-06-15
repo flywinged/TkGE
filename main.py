@@ -11,7 +11,7 @@ def f():
 
 button = Button(
     (.5, .5),
-    .2, .05,
+    .4, .25,
 
     callback=f,
 

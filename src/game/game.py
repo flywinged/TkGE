@@ -68,9 +68,6 @@ class Game:
         # Create the updateThread object. Manage time-based updates
         self.updateThread: UpdateThread = UpdateThread(self)
 
-        # Create the drawing thread
-        self.drawingThread: DrawingThread = DrawingThread(self)
-
         # Create the tk root and initialize the canvas and padFrame
         self.root = Tk()
         self.padFrame = Frame(borderwidth = 0, background = "#111", width = self.width, height = self.height)
@@ -84,6 +81,9 @@ class Game:
 
         # INITIALIZE #
         self.initialize()
+
+        self.drawing: bool = False
+        self.isActive: bool = True
 
 
     ############################
@@ -244,10 +244,10 @@ class Game:
         # Tell both the active threads to start shutting down
         self.eventThread.isActive = False
         self.updateThread.isActive = False
-        self.drawingThread.isActive = False
+        self.isActive = False
     
         # As long as the threads are still active, dont destroy the root
-        if not (self.eventThread.complete and self.updateThread.complete and self.drawingThread.complete):
+        if not (self.eventThread.complete and self.updateThread.complete and not self.drawing):
             self.root.after(10, self.programCloseEvent)
         else:
             self.root.destroy()
@@ -323,10 +323,37 @@ class Game:
         # Start all the game threads
         self.eventThread.start()
         self.updateThread.start()
-        self.drawingThread.start()
+        self.drawing = True
+        # self.drawingThread.start()
         
         # Begin the tkinter loop
-        self.root.mainloop()
+        while self.isActive:
+
+            # Record when this loop started
+            startTime = getTime()
+            
+            # Now update each of the gameObjects
+            for gameObject in self.getAllGameObjects():
+                gameObject.draw(self.DBCanvas.activeCanvas, self.width, self.height)
+            
+            # Once they are all drawn, flip the screens
+            # self.DBCanvas.flip()
+
+            self.root.update()
+
+            self.DBCanvas.activeCanvas.delete(ALL)
+            
+            # Now wait for the appropriate amount of time specified by self.updateDelay
+            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
+            finishTime = getTime()
+            timeLeft = self.drawDelay - (finishTime - startTime)
+            if timeLeft < 0: timeLeft = 0
+            
+            # Wait the appropriate amount of time
+            time.sleep(timeLeft)
+        
+        self.drawing = False
+        print("Closed Drawing Thread")
 
 
 ################
@@ -493,60 +520,6 @@ class UpdateThread(Thread):
         self.complete = True
         print("Closed Update Thread")
 
-##################
-# DRAWING THREAD #
-##################
-
-class DrawingThread(Thread):
-    '''
-    Thread to handle all the time-based game updates.
-
-    Parameters
-    ----------
-    game: Game instance. The thread needs a reference in order to access the gameObjects
-    '''
-
-    def __init__(self, game: Game):
-        Thread.__init__(self)
-
-        # Assign the game reference
-        self.game: Game = game
-
-        # Control for killing the thread from elsewhere
-        self.isActive: bool = True
-
-        # Whether or not the thread has succesfully finished
-        self.complete: bool = False
-
-    def run(self):
-        '''
-
-        '''
-
-        while self.isActive:
-
-            # Record when this loop started
-            startTime = getTime()
-            
-            # Now update each of the gameObjects
-            for gameObject in self.game.getAllGameObjects():
-                gameObject.draw(self.game.DBCanvas.bufferCanvas, self.game.width, self.game.height)
-            
-            # Once they are all drawn, flip the screens
-            self.game.DBCanvas.flip()
-            
-            # Now wait for the appropriate amount of time specified by self.game.updateDelay
-            # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
-            finishTime = getTime()
-            timeLeft = self.game.drawDelay - (finishTime - startTime)
-            if timeLeft < 0: timeLeft = 0
-            
-            # Wait the appropriate amount of time
-            time.sleep(timeLeft)
-        
-        self.complete: bool = True
-        print("Closed Drawing Thread")
-
 
 ##################################
 # DOUBLE BUFFERED TKINTER CANVAS #
@@ -624,16 +597,25 @@ class DoubleBufferedCanvas:
         Flip will change the active canvas and repack the correct canvas
         '''
 
-        # Change which canvas is immediately placed
-        self.activeCanvas.place_forget()
-        self.bufferCanvas.place(in_=self.game.padFrame, x=self.offset[0], y = self.offset[1], 
-                width=self.game.width, height=self.game.height)       
+        # # Change which canvas is immediately placed
+        # self.bufferCanvas.place(in_=self.game.padFrame, x=self.offset[0], y = self.offset[1], 
+        #         width=self.game.width, height=self.game.height)
+                
+        # self.bufferCanvas.update_idletasks()
+        # self.bufferCanvas.update()
 
-        # Then update the indexes
-        self.activeCanvasIndex = (self.activeCanvasIndex + 1) % 2
-        self.bufferCanvasIndex = (self.bufferCanvasIndex + 1) % 2
-        self.activeCanvas = self.canvases[self.activeCanvasIndex]
-        self.bufferCanvas = self.canvases[self.bufferCanvasIndex]
+        # self.activeCanvas.place_forget()
+        # self.activeCanvas.update_idletasks()
+        # self.activeCanvas.update()
 
-        # Then clear everything on the new inactive canvas
-        self.bufferCanvas.delete(ALL)
+        # # Then update the indexes
+        # self.activeCanvasIndex = (self.activeCanvasIndex + 1) % 2
+        # self.bufferCanvasIndex = (self.bufferCanvasIndex + 1) % 2
+        # self.activeCanvas = self.canvases[self.activeCanvasIndex]
+        # self.bufferCanvas = self.canvases[self.bufferCanvasIndex]
+
+        # # Then clear everything on the new inactive canvas
+        # self.bufferCanvas.delete(ALL)
+
+        # self.activeCanvas.update_idletasks()
+        # self.activeCanvas.delete(ALL)
