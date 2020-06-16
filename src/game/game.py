@@ -389,7 +389,6 @@ class Game:
             # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
             finishTime = getTime()
             timeLeft = self.drawDelay - (finishTime - startTime)
-            print((finishTime - startTime) * 1000)
             if timeLeft < 0: timeLeft = 0
             
             # Wait the appropriate amount of time
