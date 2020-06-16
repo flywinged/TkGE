@@ -8,6 +8,7 @@ from tkinter.constants import *
 
 # Python Built-in imports
 from threading import Thread
+from typing import Tuple
 from typing import Dict
 from typing import List
 
@@ -24,6 +25,7 @@ from ..base import EVENT_HANDLER
 from ..base import GameState
 
 from ..common import getTime
+from ..common import convertRGBToHex
 
 ###################
 # BASE GAME CLASS #
@@ -45,7 +47,13 @@ class Game:
     updateDelay - Time (in ms) between succesive update calls
     '''
 
-    def __init__(self, gameState: GameState, width = 1280, height = 720, updateDelay: float = 1 / 60, drawDelay: float = 1 / 60):
+    def __init__(
+        self,
+        gameState: GameState,
+        width = 1280, height = 720,
+        backgroundColor: Tuple[float] = (0, 0, 0),
+        updateDelay: float = 1 / 60,
+        drawDelay: float = 1 / 60):
 
         # Set the gameState
         self.gameState: GameState = gameState
@@ -56,6 +64,9 @@ class Game:
 
         # Aspect ratio of the game window. If forceAspect Ratio is set, it 
         self.aspectRatio: float = self.width / self.height
+
+        # Default background color of the canvas
+        self.backgroundColor: str = convertRGBToHex(backgroundColor)
 
         # How long (ms) between state updates.
         self.updateDelay: float = updateDelay
@@ -73,7 +84,7 @@ class Game:
         self.padFrame.grid(row = 0, column = 0, sticky="nsew")
 
         # Create the double buffered canvas
-        self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = '#000')
+        self.canvas: Canvas = Canvas(self.root, width = self.width, height = self.height, highlightthickness = 0, background = self.backgroundColor)
 
         # Initialize the gameObjects dict
         self.gameObjects: Dict[int, GameObject] = {}
@@ -365,23 +376,23 @@ class Game:
 
             # Record when this loop started
             startTime = getTime()
-            
+
             # Now update each of the gameObjects
             for gameObject in self.getAllGameObjects():
                 gameObject.draw(self.canvas, self.width, self.height)
 
             # Then update the screen and capture all hanging events
-            self.canvas.update_idletasks()
+            self.root.update_idletasks()
             self.root.update()
             
             # Now wait for the appropriate amount of time specified by self.updateDelay
             # We wait before doing anything to ensure this thread doesn't use excessive amounts of processing power
             finishTime = getTime()
             timeLeft = self.drawDelay - (finishTime - startTime)
+            print((finishTime - startTime) * 1000)
             if timeLeft < 0: timeLeft = 0
             
             # Wait the appropriate amount of time
-            print(timeLeft * 1000)
             time.sleep(timeLeft)
         
         self.drawing = False

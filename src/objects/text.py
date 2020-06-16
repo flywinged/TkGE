@@ -74,6 +74,9 @@ class Text(GameObject):
 
         '''
 
+        self.collider.x = self.originalPosition[0]
+        self.collider.y = self.originalPosition[1]
+
         self.collider.w = self.font[self.currentFontSize].measure(self.text) / self.screenWidth
         self.collider.h = self.font[self.currentFontSize].metrics()["linespace"] / self.screenHeight
         self.collider.adjustPoints()
