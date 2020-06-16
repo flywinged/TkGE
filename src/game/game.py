@@ -382,7 +382,6 @@ class Game:
                 gameObject.draw(self.canvas, self.width, self.height)
 
             # Then update the screen and capture all hanging events
-            self.root.update_idletasks()
             self.root.update()
             
             # Now wait for the appropriate amount of time specified by self.updateDelay
