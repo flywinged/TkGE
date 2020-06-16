@@ -27,9 +27,13 @@ class GameObject:
 
     def __init__(
         self,
+        canvas: Canvas,
         dimensions: Tuple[int] = (0, 0),
         collider: Collider = None
         ):
+
+        # Need to have a reference to the canvas
+        self.canvas: Canvas = canvas
         
         # To remember the size of the screen
         self.screenWidth: int = dimensions[0]
@@ -47,6 +51,9 @@ class GameObject:
 
         # GameObject ID
         self.ID: int = GameObject.getNextID()
+
+        # Whether or not this game object should be redrawn on the next update
+        self.redraw: bool = True
 
         # List of all child gameObjects
         self.children: List[GameObject] = []
@@ -101,6 +108,7 @@ class GameObject:
 
         for child in self.children:
             child.resize(newWidth, newHeight)
+            child.redraw = True
 
         if self.setup:
 
@@ -109,12 +117,13 @@ class GameObject:
             self.screenHeight = newHeight
 
             self._resize()
+            self.redraw = True
 
 
     ###########
     # DRAWING #
     ###########
-    def _draw(self, canvas: Canvas):
+    def _draw(self):
         '''
         Virtual function to overwrite
         '''
@@ -124,7 +133,7 @@ class GameObject:
         Virtual function to overwrite
         '''
 
-    def draw(self, canvas: Canvas, width: int, height: int):
+    def draw(self, canvas: Canvas, width: int, height: int, parentForce: bool = False):
         '''
         Draw the object and it's collider
         '''
@@ -145,10 +154,16 @@ class GameObject:
             # Call a resize
             self.resize(width, height)
 
-        self._draw(canvas)
+        if self.redraw or parentForce:
+            self._draw()
 
         for child in self.children:
-            child.draw(canvas, width, height)
+            child.draw(canvas, width, height, self.redraw or parentForce)
+        
+        # Reset the redraw value
+        if self.redraw:
+            self.canvas.update_idletasks()
+            self.redraw = False
 
 
     ##################
@@ -161,17 +176,22 @@ class GameObject:
 
         return EVENT_HANDLER.NOT_CAPTURED
 
-    def handleEvent(self, event: TGEEvent, gameState: GameState):
+    def handleEvent(self, event: TGEEvent, gameState: GameState) -> int:
         '''
         Basic event handler filter
         '''
 
+        # Handle child events first
         for child in self.children:
-            child.handleEvent(event, gameState)
+            if child.handleEvent(event, gameState) == EVENT_HANDLER.CAPTURED:
+                return
 
+        # If the child didn't capture the event, 
         if self.setup:
             return self._handleEvent(event, gameState)
 
+        # Otherwise, assume the event was not captured
+        return EVENT_HANDLER.NOT_CAPTURED
 
     ##########
     # UPDATE #
@@ -199,5 +219,4 @@ class GameObject:
 
         if self.collider is not None:
             return self.collider.isPointInside(point)
-        else:
-            return False
+        return False

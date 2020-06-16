@@ -5,9 +5,6 @@ from enum import Enum
 
 from dataclasses import dataclass
 
-from typing import Set
-
-
 # Event types
 class EVENT_TYPE(Enum):
     NO_EVENT: int = auto()

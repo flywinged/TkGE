@@ -11,9 +11,9 @@ class PlayerPaddle(Rect):
 
     '''
 
-    def __init__(self):
+    def __init__(self, canvas):
 
-        Rect.__init__(self, (.005, .5), .01, .2, (0.2, 0.8, 0.2), anchor=CENTER)
+        Rect.__init__(self, canvas, (.005, .5), .01, .2, (0.2, 0.8, 0.2), anchor=CENTER)
     
     def _handleEvent(self, event: TGEEvent, gameState: PongState):
         '''
@@ -29,17 +29,18 @@ class PlayerPaddle(Rect):
                 self.collider.y = 1.0 - self.collider.h
 
             self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+            self.redraw = True
         
-        gameState.playerPaddleLocation = self.collider.y + self.collider.h / 2
+            gameState.playerPaddleLocation = self.collider.y + self.collider.h / 2
 
 class EnemyPaddle(Rect):
     '''
 
     '''
 
-    def __init__(self):
+    def __init__(self, canvas):
 
-        Rect.__init__(self, (.995, .5), .01, .2, (0.8, 0.2, 0.2), anchor=CENTER)
+        Rect.__init__(self, canvas, (.995, .5), .01, .2, (0.8, 0.2, 0.2), anchor=CENTER)
     
     def update(self, gameState: PongState):
         '''
@@ -57,3 +58,4 @@ class EnemyPaddle(Rect):
         gameState.enemyPaddleLocation = ballCenterY + self.collider.h / 2
 
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+        self.redraw = True

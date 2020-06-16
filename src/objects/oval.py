@@ -32,6 +32,7 @@ class Oval(GameObject):
 
     def __init__(
             self,
+            canvas: Canvas,
             position: Tuple[float],
             radius: Tuple[float],
             fillColor: Tuple[float] = (1.0, 1.0, 1.0),
@@ -40,7 +41,7 @@ class Oval(GameObject):
             ):
 
         # Create the oval collider for the object. This collider is then passed in to the parent initializer
-        GameObject.__init__(self, **kwargs)
+        GameObject.__init__(self, canvas, **kwargs)
 
         # Account for if only a single parameter was passed to oval. In this case, a circle is created.
         self.radius: Tuple[float] = radius
@@ -52,11 +53,18 @@ class Oval(GameObject):
         # Coord values
         self.coords: List[float] = []
 
-    def _draw(self, canvas: Canvas):
+        # Oval ID
+        self.ovalID: int = 0
 
-        canvas.create_oval(
+    def _draw(self):
+
+        if self.ovalID != 0:
+            self.canvas.delete(self.ovalID)
+
+        self.ovalID = self.canvas.create_oval(
             *self.coords,
-            fill = self.fillColor)
+            fill = self.fillColor
+        )
 
     def _setup(self):
         if type(self.radius) == float:
@@ -67,3 +75,10 @@ class Oval(GameObject):
 
     def _resize(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+    
+    def _delete(self):
+        '''
+        Remove all the IDs from the canvas
+        '''
+
+        self.canvas.delete(self.ovalID)

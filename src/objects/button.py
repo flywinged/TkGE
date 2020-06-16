@@ -1,5 +1,6 @@
 
 # Tkinter imports
+from tkinter import Canvas
 from tkinter import CENTER
 
 # Python imports
@@ -24,6 +25,7 @@ class Button(Rect):
 
     def __init__(
             self,
+            canvas: Canvas,
             position: Tuple[int],
             width: int,
             height: int,
@@ -43,8 +45,10 @@ class Button(Rect):
             **kwargs
             ):
 
+        # Call parent init. Set all default values for button outline.
         Rect.__init__(
             self,
+            canvas,
             position,
             width, height,
             fillColor=fillColor,
@@ -60,24 +64,20 @@ class Button(Rect):
         self.textHighlight = convertRGBToHex(textHighlight)
 
         self.text: Text = Text(
+            canvas,
             (self.collider.x + self.collider.w / 2, self.collider.y + self.collider.h / 2),
             text = text,
             fontSize=textSize,
             textColor=textColor,
             font=font
         )
+
         self.addChild(self.text)
 
         self.hovered: bool = False
 
         # Callback for when the button is pressed
         self.callback: FunctionType = callback
-
-    def _setup(self):
-        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
-    
-    def _resize(self):
-        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
 
     def _handleEvent(self, event: TGEEvent, gameState: GameState):
         if event.type == EVENT_TYPE.MOUSE_MOTION:
@@ -97,10 +97,14 @@ class Button(Rect):
                 self.text.textColor = self.textHighlight
                 self.fillColor = self.highlightColor
 
+                self.redraw = True
+
         else:
 
             if self.hovered:
                 self.hovered = False
                 self.text.textColor = self.textColor
                 self.fillColor = self.defaultColor
+
+                self.redraw = True
     

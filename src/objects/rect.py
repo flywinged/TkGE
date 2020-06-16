@@ -32,6 +32,7 @@ class Rect(GameObject):
 
     def __init__(
             self,
+            canvas: Canvas,
             position: Tuple[float],
             width: float,
             height: float,
@@ -40,7 +41,7 @@ class Rect(GameObject):
             **kwargs
             ):
 
-        GameObject.__init__(self, **kwargs)
+        GameObject.__init__(self, canvas, **kwargs)
 
          # A Button uses the basic box collider. Build the appropriate box collider.
         self.collider = BoxCollider(position[0], position[1], width, height, anchor=anchor)
@@ -51,11 +52,22 @@ class Rect(GameObject):
         # Color
         self.fillColor: str = convertRGBToHex(fillColor)
 
-    def _setup(self):
-        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight) 
+        # Create the rectID for use later
+        self.rectID: int = 0
 
-    def _draw(self, canvas: Canvas):
-        canvas.create_rectangle(*self.coords, fill = self.fillColor)
+
+    def _setup(self):
+        self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+
+    def _draw(self):
+
+        if self.rectID != 0:
+            self.canvas.delete(self.rectID)
+
+        self.rectID = self.canvas.create_rectangle(
+            *self.coords,
+            fill = self.fillColor
+        )
     
     def _resize(self):
         '''
@@ -63,3 +75,11 @@ class Rect(GameObject):
         '''
 
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+        self.canvas.coords(self.rectID, self.coords)
+    
+    def _delete(self):
+        '''
+        Remove all the IDs from the canvas
+        '''
+
+        self.canvas.delete(self.rectID)

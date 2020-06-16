@@ -38,7 +38,8 @@ class Text(GameObject):
 
     def __init__(
                 self,
-                position: Tuple[int],
+                canvas: Canvas,
+                position: Tuple[float],
                 text: str,
                 font: str = "Courier",
                 fontSize: int = 12,
@@ -48,7 +49,7 @@ class Text(GameObject):
             ):
         
         # Initialize the gameobject
-        GameObject.__init__(self, **kwargs)
+        GameObject.__init__(self, canvas, **kwargs)
 
         # The text object needs to remeber its initial font size so it can be rezied appropriately
         self.initialFontSize: int = fontSize
@@ -61,15 +62,31 @@ class Text(GameObject):
 
         # Set up the collider for the text.
         self.collider: BoxCollider = BoxCollider(position[0], position[1], 0, 0, anchor = anchor)
+
+        # Remember the original position
+        self.originalPosition: Tuple[float] = position
     
-    def _setup(self):
+        # Create textID
+        self.textID: int = 0
+
+    def updateText(self):
+        '''
+
+        '''
+
         self.collider.w = self.font[self.currentFontSize].measure(self.text) / self.screenWidth
         self.collider.h = self.font[self.currentFontSize].metrics()["linespace"] / self.screenHeight
         self.collider.adjustPoints()
 
-    def _draw(self, canvas: Canvas):
+    def _setup(self):
+        self.updateText()
 
-        canvas.create_text(
+    def _draw(self):
+
+        if self.textID != 0:
+            self.canvas.delete(self.textID)
+        
+        self.textID = self.canvas.create_text(
             self.collider.x * self.screenWidth,
             self.collider.y * self.screenHeight,
             text = self.text,
@@ -94,3 +111,13 @@ class Text(GameObject):
             textSize = fonts.LARGEST_FONT_SIZE
 
         self.currentFontSize = textSize
+
+        # Now call all the canvas methods necessary
+        self.updateText()
+    
+    def _delete(self):
+        '''
+        Remove all the IDs from the canvas
+        '''
+
+        self.canvas.delete(self.textID)

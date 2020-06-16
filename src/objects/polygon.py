@@ -28,26 +28,38 @@ class Polygon(GameObject):
 
     def __init__(
             self,
+            canvas: Canvas,
             points: List[Tuple[float]],
             fillColor: Tuple[float] = (1.0, 1.0, 1.0),
             **kwargs
             ):
         
         polygonCollider = PolygonCollider(points)
-        GameObject.__init__(self, collider=polygonCollider, **kwargs)
+        GameObject.__init__(self, canvas, collider=polygonCollider, **kwargs)
 
         self.coords: List[float] = []
 
         self.fillColor: Tuple[float] = convertRGBToHex(fillColor)
+
+        self.polygonID: int = 0
     
     def _setup(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight) 
 
-    def _draw(self, canvas: Canvas):
-
-        canvas.create_polygon(
+        self.polygonID = self.canvas.create_polygon(
             *self.collider.getCoords(self.screenWidth, self.screenHeight),
-            fill = self.fillColor)
+            fill = self.fillColor
+        )
+
+    def _draw(self):
+
+        if self.polygonID != 0:
+            self.canvas.delete(self.polygonID)
+
+        self.polygonID = self.canvas.create_polygon(
+            *self.collider.getCoords(self.screenWidth, self.screenHeight),
+            fill = self.fillColor
+        )
 
     def _resize(self):
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight) 

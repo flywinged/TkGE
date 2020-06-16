@@ -1,3 +1,5 @@
+from tkinter import Canvas
+
 # Python imports
 from typing import Tuple
 import math
@@ -26,6 +28,7 @@ class Hexagon(Polygon):
 
     def __init__(
             self,
+            canvas: Canvas, 
             position: Tuple[float],
             radius: float,
             rotation: float = 0.0,
@@ -42,7 +45,7 @@ class Hexagon(Polygon):
                 position[1] + radius * math.sin(angle)
             ))
 
-        Polygon.__init__(self, points, **kwargs)
+        Polygon.__init__(self, canvas, points, **kwargs)
     
     def _setup(self):
 

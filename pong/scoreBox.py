@@ -9,9 +9,10 @@ class ScoreBox(Text):
 
     '''
 
-    def __init__(self):
+    def __init__(self, canvas):
         Text.__init__(
             self,
+            canvas,
             (.5, 0),
             "0",
             fontSize=32,
@@ -20,4 +21,6 @@ class ScoreBox(Text):
         )
 
     def _update(self, gameState: PongState):
-        self.text = str(gameState.score)
+        if self.text != str(gameState.score):
+            self.text = str(gameState.score)
+            self.redraw = True

@@ -14,10 +14,10 @@ class Pong(Game):
         state = PongState()
         Game.__init__(self, state)
 
-        self.addGameObject(PlayerPaddle())
-        self.addGameObject(EnemyPaddle())
-        self.addGameObject(Ball())
-        self.addGameObject(ScoreBox())
+        self.addGameObject(PlayerPaddle(self.canvas))
+        self.addGameObject(EnemyPaddle(self.canvas))
+        self.addGameObject(Ball(self.canvas))
+        self.addGameObject(ScoreBox(self.canvas))
     
     def updateBefore(self):
         '''

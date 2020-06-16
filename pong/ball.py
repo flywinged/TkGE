@@ -15,8 +15,8 @@ class Ball(Oval):
 
     '''
 
-    def __init__(self):
-        Oval.__init__(self, (.5, .5), .01, (.6, .6, .3), anchor=CENTER)
+    def __init__(self, canvas):
+        Oval.__init__(self, canvas, (.5, .5), .01, (.6, .6, .3), anchor=CENTER)
 
     def hitPaddle(self, gameState: PongState, multiplier: float):
         '''
@@ -103,3 +103,4 @@ class Ball(Oval):
         self.collider.y = gameState.ballLocation[1]
         
         self.coords = self.collider.getCoords(self.screenWidth, self.screenHeight)
+        self.redraw = True
